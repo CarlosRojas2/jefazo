@@ -27,6 +27,7 @@
         "@mui/lab": "^5.0.0-alpha.173",
         "@mui/material": "^5.16.14",
         "@mui/x-data-grid": "^7.7.0",
+        "lodash.debounce": "^4.0.8",
         "react-helmet-async": "^2.0.5",
         "simplebar-react": "^3.3.0",
         "sonner": "^1.7.2"

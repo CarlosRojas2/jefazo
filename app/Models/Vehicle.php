@@ -2,13 +2,14 @@
 namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-
-class Customer extends Model{
+class Vehicle extends Model{
     use SoftDeletes;
     protected $fillable=[
-        "full_names",
-        "dni",
-        "phone",
-        "address"
+        'customer_id',
+        'brand',
+        'model',
+        'plate',
+        'color'
     ];
+    //
 }

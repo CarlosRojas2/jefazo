@@ -7,8 +7,8 @@ import Button from '@mui/material/Button';
 import { Iconify } from '@/Template/Components/iconify';
 import LoadingButton from '@mui/lab/LoadingButton';
 import DataGrid from '@/Components/DataGrid';
-import Form from '@/Pages/Managements/Concepts/Form';
-const Concept = ()=>{
+import Form from '@/Pages/Managements/Vehicles/Form';
+const Vehicle = ()=>{
     const columns = [
         {
             field: 'id',
@@ -17,12 +17,40 @@ const Concept = ()=>{
             headerClassName: 'super-app-theme--header',
         },
         {
-            field: 'description',
-            headerName: 'Descripción',
+            field: 'Representante',
+            headerName: 'customer',
             width: 400,
             filterable:false,
             headerClassName: 'super-app-theme--header',
-        }
+        },
+        {
+            field: 'Marca',
+            headerName: 'brand',
+            width: 200,
+            filterable:false,
+            headerClassName: 'super-app-theme--header',
+        },
+        {
+            field: 'Modelo',
+            headerName: 'model',
+            width: 200,
+            filterable:false,
+            headerClassName: 'super-app-theme--header',
+        },
+        {
+            field: 'Placa',
+            headerName: 'plate',
+            width: 200,
+            filterable:false,
+            headerClassName: 'super-app-theme--header',
+        },
+        {
+            field: 'Color',
+            headerName: 'color',
+            width: 200,
+            filterable:false,
+            headerClassName: 'super-app-theme--header',
+        },
     ];
     const [refresh, setRefresh] = useState(false);
     const [openDialog, setOpenDialog] = useState(false);
@@ -35,7 +63,7 @@ const Concept = ()=>{
             return;
         }
         setLoadingEdit(true);
-        axios.get(route('concepts.show',selectedRecord)).then(response => {
+        axios.get(route('vehicles.show',selectedRecord)).then(response => {
             setDataFormEdit(response.data)
             handleOpenDialog();
         }).catch(error => {
@@ -50,9 +78,9 @@ const Concept = ()=>{
             toast.warning('Por favor seleccione un registro para eliminar!');
             return;
         }
-        axios.delete(route('concepts.destroy',selectedRecord))
+        axios.delete(route('vehicles.destroy',selectedRecord))
         .then(response => {
-            toast.success('El Concepto se eliminó con éxito!');
+            toast.success('El Vehículo se eliminó con éxito!');
             refreshGrid();
         })
         .catch(error => {
@@ -75,7 +103,7 @@ const Concept = ()=>{
     }
     return (
         <DashboardContent>
-            <Head title="Conceptos" />
+            <Head title="Vehículos" />
             <Stack
                 direction="row"
                 spacing={1}
@@ -115,8 +143,8 @@ const Concept = ()=>{
                 returnSelectedRow={handleSelectedRow}
                 columns={columns}
                 refresh={refresh}
-                title="Administrar Conceptos"
-                path='concepts.list'
+                title="Administrar Vehículos"
+                path='vehicles.list'
                 dblClick={handleEdit}
             />
             <Form
@@ -128,5 +156,5 @@ const Concept = ()=>{
         </DashboardContent>
     );
 }
-Concept.layout = page => <DashboardLayout children={page} title="Conceptos" />
-export default Concept
+Vehicle.layout = page => <DashboardLayout children={page} title="Vehiculoa" />
+export default Vehicle

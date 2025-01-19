@@ -8,9 +8,12 @@ import MenuList from '@mui/material/MenuList';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
+import { usePage,router } from '@inertiajs/react';
+
 // ----------------------------------------------------------------------
 
 export function AccountPopover({ data = [], sx, ...other }) {
+    const user = usePage().props.auth.user;
     const [openPopover, setOpenPopover] = useState(null);
     const handleOpenPopover = useCallback((event) => {
         setOpenPopover(event.currentTarget);
@@ -20,14 +23,9 @@ export function AccountPopover({ data = [], sx, ...other }) {
         setOpenPopover(null);
     }, []);
 
-    const handleClickItem = useCallback(
-        (path) => {
-            handleClosePopover();
-            console.log('hola')
-        },
-        [handleClosePopover]
-    );
-
+    const handleLogout = useCallback(async () => {
+        router.post('logout');
+    }, []);
     return (
         <>
             <IconButton
@@ -61,52 +59,14 @@ export function AccountPopover({ data = [], sx, ...other }) {
             >
                 <Box sx={{ p: 2, pb: 1.5 }}>
                     <Typography variant="subtitle2" noWrap>
-                        Carlos
-                    </Typography>
-
-                    <Typography variant="body2" sx={{ color: 'text.secondary' }} noWrap>
-                        Carleo
+                        {user.name}
                     </Typography>
                 </Box>
 
                 <Divider sx={{ borderStyle: 'dashed' }} />
 
-                <MenuList
-                    disablePadding
-                    sx={{
-                        p: 1,
-                        gap: 0.5,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        [`& .${menuItemClasses.root}`]: {
-                            px: 1,
-                            gap: 2,
-                            borderRadius: 0.75,
-                            color: 'text.secondary',
-                            '&:hover': { color: 'text.primary' },
-                            [`&.${menuItemClasses.selected}`]: {
-                                color: 'text.primary',
-                                bgcolor: 'action.selected',
-                                fontWeight: 'fontWeightSemiBold',
-                            },
-                        },
-                    }}
-                >
-                    {data.map((option) => (
-                        <MenuItem
-                            key={option.label}
-                            onClick={() => handleClickItem(option.href)}
-                        >
-                            {option.icon}
-                            {option.label}
-                        </MenuItem>
-                    ))}
-                </MenuList>
-
-                <Divider sx={{ borderStyle: 'dashed' }} />
-
                 <Box sx={{ p: 1 }}>
-                    <Button fullWidth color="error" size="medium" variant="text">
+                    <Button fullWidth color="error" size="medium" variant="text" onClick={ handleLogout}>
                         Cerrar sesión
                     </Button>
                 </Box>

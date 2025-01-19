@@ -51,10 +51,35 @@ const Customer = ()=>{
     const [dataFormEdit, setDataFormEdit] = useState(null);
     const [selectedRecord, setSelectedRecord] = useState(null);
     const handleEdit=()=>{
-        toast.warning('Por favor seleccione un registro para editar!');
-        return;
+        if(selectedRecord.length<=0){
+            toast.warning('Por favor seleccione un registro para editar!');
+            return;
+        }
+        setLoadingEdit(true);
+        axios.get(route('customers.show',selectedRecord)).then(response => {
+            setDataFormEdit(response.data)
+            handleOpenDialog();
+        }).catch(error => {
+            console.error('Error al obtener los datos:',error);
+        })
+        .finally(()=>{
+            setLoadingEdit(false);
+        });
     };
-    const handleDestroy=()=>{};
+    const handleDestroy=()=>{
+        if(selectedRecord.length<=0){
+            toast.warning('Por favor seleccione un registro para eliminar!');
+            return;
+        }
+        axios.delete(route('customers.destroy',selectedRecord))
+        .then(response => {
+            toast.success('El Cliente se eliminó con éxito!');
+            refreshGrid();
+        })
+        .catch(error => {
+            console.error('Error al obtener los datos:', error);
+        });
+    };
     const handleOpenDialog = () => {
         setOpenDialog(true);
         setRefresh(false);

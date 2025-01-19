@@ -9,32 +9,28 @@ import TextField from '@mui/material/TextField';
 import { useForm  } from '@inertiajs/react';
 import { useMemo,useState } from 'react';
 import { useTheme } from '@mui/material/styles';
-import SearchDocument from '@/Components/SearchDocument';
 import Grid from '@mui/material/Unstable_Grid2';
 
 export default function Form({ open,handleClose,initFormData,handleRefresh }){
     const theme = useTheme();
-    const [title,setTitle]=useState('Registrar Clientes');
+    const [title,setTitle]=useState('Registrar Concepto');
     const { reset, data, setData, post, processing, errors } = useForm({
         id:-1,
-        full_names: '',
-        dni:'',
-        phone:'',
-        address:''
+        description:''
     });
     useMemo(()=>{
         if(initFormData!==null){
             setData(initFormData);
-            setTitle('Editar Cliente');
+            setTitle('Editar Concepto');
         }else{
             reset();
-            setTitle('Registrar Cliente');
+            setTitle('Registrar Concepto');
         }
     },[initFormData]);
 
     function handleSubmit(e) {
         e.preventDefault()
-        post(route('customers.store'),{
+        post(route('concepts.store'),{
             onSuccess:()=>{
                 toast.success('Datos guardados con éxito!');
                 reset();
@@ -43,14 +39,6 @@ export default function Form({ open,handleClose,initFormData,handleRefresh }){
             }
         })
     }
-
-    const handleSearchDni = (response)=>{
-        setData('dni',response);
-    };
-
-    const setSearchDni = (response)=>{
-        setData('full_names',response.name);
-    };
 
     return (
         <Dialog
@@ -78,56 +66,17 @@ export default function Form({ open,handleClose,initFormData,handleRefresh }){
                     <Stack spacing={3} sx={{px:3, pb:2}}>
                         <Grid container spacing={1} sx={{pt:1}}>
                             <Grid xs={12} md={12} lg={12}>
-                                <SearchDocument
-                                    label="Dni"
-                                    value={data.dni}
-                                    path="dni.search"
-                                    autofocus={true}
-                                    onChange={handleSearchDni}
-                                    onSearch={setSearchDni}
-                                    from='dni'
-                                    error={errors.dni}
-                                    helperText={errors.dni}
-                                ></SearchDocument>
-                            </Grid>
-
-                            <Grid xs={12} md={12} lg={12}>
                                 <TextField
-                                    label="Nombres"
-                                    name="full_names"
-                                    value={data.full_names}
-                                    onChange={e => setData('full_names', e.target.value)}
-                                    error={errors.full_names?true:false}
+                                    label="Descripción"
+                                    name="description"
+                                    value={data.description}
+                                    onChange={e => setData('description', e.target.value)}
+                                    error={errors.description?true:false}
                                     size="small"
                                     fullWidth
+                                    autoFocus
                                 />
                             </Grid>
-
-                            <Grid xs={12} md={12} lg={12}>
-                                <TextField
-                                    label="Dirección"
-                                    name="address"
-                                    value={data.address}
-                                    onChange={e => setData('address', e.target.value)}
-                                    error={errors.address?true:false}
-                                    size="small"
-                                    fullWidth
-                                />
-                            </Grid>
-
-                            <Grid xs={12} md={12} lg={12}>
-                                <TextField
-                                    label="Teléfono"
-                                    name="phone"
-                                    value={data.phone}
-                                    onChange={e => setData('phone', e.target.value)}
-                                    error={errors.phone?true:false}
-                                    size="small"
-                                    fullWidth
-                                />
-                            </Grid>
-
-
                         </Grid>
                     </Stack>
                 {/* </Scrollbar> */}
