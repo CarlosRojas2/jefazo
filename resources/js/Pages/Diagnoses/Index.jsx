@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Head } from '@inertiajs/react';
+import { Head,router } from '@inertiajs/react';
 import { DashboardLayout,DashboardContent } from '@/Layouts/dashboard';
 import { toast } from '@/Template/Components/snackbar';
 import Stack from '@mui/material/Stack';
@@ -7,50 +7,43 @@ import Button from '@mui/material/Button';
 import { Iconify } from '@/Template/Components/iconify';
 import LoadingButton from '@mui/lab/LoadingButton';
 import DataGrid from '@/Components/DataGrid';
-import Form from '@/Pages/Managements/Vehicles/Form';
-const Vehicle = ()=>{
+import Form from '@/Pages/Managements/Customers/Form';
+const Diagnosis = ()=>{
     const columns = [
         {
             field: 'id',
             headerName: '#',
-            width: 80,
+            width: 90,
             headerClassName: 'super-app-theme--header',
         },
         {
-            field: 'customer',
-            headerName: 'Representante',
+            field: 'full_names',
+            headerName: 'Nombres',
+            width: 400,
+            filterable:false,
+            headerClassName: 'super-app-theme--header',
+        },
+        {
+            field: 'dni',
+            headerName: 'Dni',
+            width: 150,
+            filterable:false,
+            headerClassName: 'super-app-theme--header',
+        },
+        {
+            field: 'phone',
+            headerName: 'Teléfono',
+            width: 150,
+            filterable:false,
+            headerClassName: 'super-app-theme--header',
+        },
+        {
+            field: 'address',
+            headerName: 'Dirección',
             width: 300,
             filterable:false,
             headerClassName: 'super-app-theme--header',
-        },
-        {
-            headerName: 'Marca',
-            field: 'brand',
-            width: 200,
-            filterable:false,
-            headerClassName: 'super-app-theme--header',
-        },
-        {
-            field: 'model',
-            headerName: 'Modelo',
-            width: 200,
-            filterable:false,
-            headerClassName: 'super-app-theme--header',
-        },
-        {
-            field: 'plate',
-            headerName: 'placa',
-            width: 200,
-            filterable:false,
-            headerClassName: 'super-app-theme--header',
-        },
-        {
-            field: 'color',
-            headerName: 'Color',
-            width: 200,
-            filterable:false,
-            headerClassName: 'super-app-theme--header',
-        },
+        }
     ];
     const [refresh, setRefresh] = useState(false);
     const [openDialog, setOpenDialog] = useState(false);
@@ -63,7 +56,7 @@ const Vehicle = ()=>{
             return;
         }
         setLoadingEdit(true);
-        axios.get(route('vehicles.show',selectedRecord)).then(response => {
+        axios.get(route('customers.show',selectedRecord)).then(response => {
             setDataFormEdit(response.data)
             handleOpenDialog();
         }).catch(error => {
@@ -78,9 +71,9 @@ const Vehicle = ()=>{
             toast.warning('Por favor seleccione un registro para eliminar!');
             return;
         }
-        axios.delete(route('vehicles.destroy',selectedRecord))
+        axios.delete(route('customers.destroy',selectedRecord))
         .then(response => {
-            toast.success('El Vehículo se eliminó con éxito!');
+            toast.success('El Cliente se eliminó con éxito!');
             refreshGrid();
         })
         .catch(error => {
@@ -91,6 +84,11 @@ const Vehicle = ()=>{
         setOpenDialog(true);
         setRefresh(false);
     };
+
+    const handleAdd = ()=>{
+        router.visit(route('diagnoses.create'));
+    }
+
     const handleCloseDialog = () => {
         setOpenDialog(false);
         setDataFormEdit(null);
@@ -103,7 +101,7 @@ const Vehicle = ()=>{
     }
     return (
         <DashboardContent>
-            <Head title="Vehículos" />
+            <Head title="Clientes" />
             <Stack
                 direction="row"
                 spacing={1}
@@ -115,7 +113,7 @@ const Vehicle = ()=>{
                     variant="contained"
                     color="primary"
                     startIcon={<Iconify icon="mingcute:add-line" />}
-                    onClick={handleOpenDialog}
+                    onClick={handleAdd}
                 >
                     Nuevo
                 </Button>
@@ -143,10 +141,16 @@ const Vehicle = ()=>{
                 returnSelectedRow={handleSelectedRow}
                 columns={columns}
                 refresh={refresh}
-                title="Administrar Vehículos"
-                path='vehicles.list'
+                title="Administrar Diagnósticos"
+                path='customers.list'
                 dblClick={handleEdit}
             />
+
+            {/* <Box display="flex" alignItems="center" mb={5}>
+                <Typography variant="h4" flexGrow={1}>
+                    Clientes
+                </Typography>
+            </Box> */}
             <Form
                 open={openDialog}
                 handleClose={handleCloseDialog}
@@ -156,5 +160,5 @@ const Vehicle = ()=>{
         </DashboardContent>
     );
 }
-Vehicle.layout = page => <DashboardLayout children={page} title="Vehiculoa" />
-export default Vehicle
+Diagnosis.layout = page => <DashboardLayout children={page} title="Clientes" />
+export default Diagnosis

@@ -11,4 +11,8 @@ class Customer extends Model{
         "phone",
         "address"
     ];
+
+    public function vehicles(){
+        return $this->hasMany(Vehicle::class);
+    }
 }

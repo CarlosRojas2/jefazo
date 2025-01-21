@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ConceptController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\DiagnosisController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\WebServiceController;
@@ -37,6 +38,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/list', [VehicleController::class,'list'])->name('list');
     });
     Route::resource('vehicles', VehicleController::class)->only(['index','show','destroy','store']);
+
+    // Rutas para diagnosticos
+    Route::prefix('diagnoses')->name('diagnoses.')->group(function () {
+        Route::get('/list', [DiagnosisController::class,'list'])->name('list');
+    });
+    Route::resource('diagnoses', DiagnosisController::class)->only(['index','create','show','destroy','store']);
 });
 
 require __DIR__.'/auth.php';

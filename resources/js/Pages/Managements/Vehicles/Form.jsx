@@ -33,6 +33,7 @@ export default function Form({ open,handleClose,initFormData,handleRefresh }){
     },[initFormData]);
 
     const setCustomer = (customer_id)=>{
+        console.log('customer_id',customer_id)
         setData(old=>({...old,customer_id:customer_id}));
     }
 
@@ -84,33 +85,47 @@ export default function Form({ open,handleClose,initFormData,handleRefresh }){
                             </Grid>
                             <Grid xs={12} md={12} lg={12}>
                                 <TextField
-                                    label="Descripción"
-                                    name="description"
-                                    value={data.description}
-                                    onChange={e => setData('description', e.target.value)}
-                                    error={errors.description?true:false}
+                                    label="Marca"
+                                    name="brand"
+                                    value={data.brand}
+                                    onChange={e => setData('brand', e.target.value)}
+                                    error={errors.brand?true:false}
                                     size="small"
                                     fullWidth
                                     autoFocus
                                 />
-                            </Grid><Grid xs={12} md={12} lg={12}>
+                            </Grid>
+                            <Grid xs={12} md={12} lg={12}>
                                 <TextField
-                                    label="Descripción"
-                                    name="description"
-                                    value={data.description}
-                                    onChange={e => setData('description', e.target.value)}
-                                    error={errors.description?true:false}
+                                    label="Modelo"
+                                    name="model"
+                                    value={data.model}
+                                    onChange={e => setData('model', e.target.value)}
+                                    error={errors.model?true:false}
                                     size="small"
                                     fullWidth
                                     autoFocus
                                 />
-                            </Grid><Grid xs={12} md={12} lg={12}>
+                            </Grid>
+                            <Grid xs={12} md={12} lg={12}>
                                 <TextField
-                                    label="Descripción"
-                                    name="description"
-                                    value={data.description}
-                                    onChange={e => setData('description', e.target.value)}
-                                    error={errors.description?true:false}
+                                    label="Placa"
+                                    name="plate"
+                                    value={data.plate}
+                                    onChange={e => setData('plate', e.target.value)}
+                                    error={errors.plate?true:false}
+                                    size="small"
+                                    fullWidth
+                                    autoFocus
+                                />
+                            </Grid>
+                            <Grid xs={12} md={12} lg={12}>
+                                <TextField
+                                    label="Color"
+                                    name="color"
+                                    value={data.color}
+                                    onChange={e => setData('color', e.target.value)}
+                                    error={errors.color?true:false}
                                     size="small"
                                     fullWidth
                                     autoFocus

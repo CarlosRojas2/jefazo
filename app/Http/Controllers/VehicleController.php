@@ -1,7 +1,5 @@
 <?php
 namespace App\Http\Controllers;
-
-use App\Models\Customer;
 use App\Models\Vehicle;
 use App\Services\DataTable;
 use Illuminate\Http\Request;
@@ -27,9 +25,9 @@ class VehicleController extends Controller{
 
     public function list(Request $request){
         $grid=new DataTable($request);
-        $grid->of(Vehicle::selectRaw("id,cu.full_names,brand,model,plate,color")
+        $grid->of(Vehicle::selectRaw("vehicles.id,cu.full_names as customer,brand,model,plate,color")
         ->join('customers as cu','cu.id','vehicles.customer_id')
-        ->orderByDesc('id'));
+        ->orderByDesc('vehicles.id'));
         $result=$grid->json();
         return response()->json($result);
     }

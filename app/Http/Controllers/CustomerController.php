@@ -42,6 +42,7 @@ class CustomerController extends Controller{
         $search='%'.Str::upper($request->input('search')).'%';
         $id = $request->id;
         $records=Customer::select('id','full_names')
+        ->with(['vehicles'])
         ->where(function($query) use($id,$search){
             if($id){
                 $query->where('id',$id);

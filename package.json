@@ -30,6 +30,9 @@
         "lodash.debounce": "^4.0.8",
         "react-helmet-async": "^2.0.5",
         "simplebar-react": "^3.3.0",
-        "sonner": "^1.7.2"
+        "sonner": "^1.7.2",
+        "date-fns": "^2.30.0",
+        "dayjs": "^1.11.11",
+        "@mui/x-date-pickers": "^7.13.0"
     }
 }

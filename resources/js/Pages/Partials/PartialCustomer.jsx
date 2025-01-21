@@ -48,7 +48,7 @@ export default function PartialCustomer({path,id,handleSet,error}){
 
     useEffect(()=>{
         if(selectedValue){
-            handleSet(selectedValue.id)
+            handleSet(selectedValue.id,selectedValue.vehicles)
         }else{
             handleSet(null)
         }
@@ -64,7 +64,7 @@ export default function PartialCustomer({path,id,handleSet,error}){
     }, [id]);
     return(
         <>
-            <Stack spacing={2} sx={{ width: 543 }} >
+            {/* <Stack spacing={2} sx={{ width: 543 }} > */}
                 <Autocomplete
                     freeSolo
                     options={items}
@@ -104,7 +104,7 @@ export default function PartialCustomer({path,id,handleSet,error}){
                         />
                     )}
                 />
-            </Stack>
+            {/* </Stack> */}
             <Form
                 open={openDialog}
                 handleClose={handleCloseDialog}

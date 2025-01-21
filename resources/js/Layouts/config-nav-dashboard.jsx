@@ -3,7 +3,7 @@ import { SvgColor } from '@/Template/Components/svg-color';
 // ----------------------------------------------------------------------
 
 const icon = (name) => (
-    <SvgColor width="100%" height="100%" src={`storage/assets/icons/navbar/${name}.svg`} />
+    <SvgColor width="100%" height="100%" src={`/storage/assets/icons/navbar/${name}.svg`} />
 );
 
 export const navData = [
@@ -20,11 +20,11 @@ export const navData = [
     {
         title: 'Vehículos',
         path: 'vehicles.index',
-        icon: icon('ic-cart'),
-        info: (
-            <Label color="error" variant="inverted">
-                +3
-            </Label>
-        )
+        icon: icon('ic-cart')
+    },
+    {
+        title: 'Diagnósticos',
+        path: 'diagnoses.index',
+        icon: icon('ic-cart')
     }
 ];
