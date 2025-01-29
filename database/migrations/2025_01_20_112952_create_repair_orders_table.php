@@ -4,19 +4,20 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 return new class extends Migration{
     public function up(): void{
-        Schema::create('diagnoses', function (Blueprint $table) {
+        Schema::create('repair_orders', function (Blueprint $table) {
             $table->id();
+            $table->string('correlative');
             $table->foreignId('customer_id')->constrained()->onDelete('cascade');
             $table->foreignId('vehicle_id')->constrained()->onDelete('cascade');
-            $table->string('reason');
-            $table->string('diagnosis');
-            $table->string('obssrvations');
+            $table->string('problem');
+            $table->string('observations');
             $table->timestamp('entry_date_time');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
     public function down(): void{
-        Schema::dropIfExists('diagnoses');
+        Schema::dropIfExists('repair_orders');
     }
 };

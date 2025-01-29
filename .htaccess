@@ -1,0 +1,29 @@
+<IfModule mod_rewrite.c>
+
+    RewriteEngine On
+
+    RewriteCond %{REQUEST_FILENAME} -d [OR]
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^ ^$1 [N]
+
+    RewriteCond %{REQUEST_URI} (\.\w+$) [NC]
+    RewriteRule ^(.*)$ public/$1
+
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php
+
+    # Handle Authorization Header
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+    RewriteRule ^.env - [F,L,NC]
+    RewriteRule ^app/.* - [F,L,NC]
+    RewriteRule ^bootstrap/.* - [F,L,NC]
+    RewriteRule ^config/.* - [F,L,NC]
+    RewriteRule ^database/.* - [F,L,NC]
+    RewriteRule ^resources/.* - [F,L,NC]
+    RewriteRule ^routes/.* - [F,L,NC]
+    RewriteRule ^storage/.* - [F,L,NC]
+    RewriteRule ^vendor/.* - [F,L,NC]
+
+</IfModule>

@@ -23,8 +23,13 @@ export const navData = [
         icon: icon('ic-cart')
     },
     {
-        title: 'Diagnósticos',
-        path: 'diagnoses.index',
+        title: 'Repuestos',
+        path: 'repair_parts.index',
+        icon: icon('ic-cart')
+    },
+    {
+        title: 'Órdenes de Rep.',
+        path: 'repair_orders.index',
         icon: icon('ic-cart')
     }
 ];

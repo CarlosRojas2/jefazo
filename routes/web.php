@@ -2,8 +2,9 @@
 
 use App\Http\Controllers\ConceptController;
 use App\Http\Controllers\CustomerController;
-use App\Http\Controllers\DiagnosisController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RepairOrderController;
+use App\Http\Controllers\RepairPartController;
 use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\WebServiceController;
 use Illuminate\Foundation\Application;
@@ -39,11 +40,18 @@ Route::middleware('auth')->group(function () {
     });
     Route::resource('vehicles', VehicleController::class)->only(['index','show','destroy','store']);
 
-    // Rutas para diagnosticos
-    Route::prefix('diagnoses')->name('diagnoses.')->group(function () {
-        Route::get('/list', [DiagnosisController::class,'list'])->name('list');
+    // Rutas para ordenes de reparación
+    Route::prefix('repair_orders')->name('repair_orders.')->group(function () {
+        Route::get('/list', [RepairOrderController::class,'list'])->name('list');
+        Route::post('/upload', [RepairOrderController::class, 'upload'])->name('upload');
     });
-    Route::resource('diagnoses', DiagnosisController::class)->only(['index','create','show','destroy','store']);
+    Route::resource('repair_orders', RepairOrderController::class)->only(['index','create','edit','show','destroy','store']);
+
+    // Rutas para respuestos de reparación
+    Route::prefix('repair_parts')->name('repair_parts.')->group(function () {
+        Route::get('/list', [RepairPartController::class,'list'])->name('list');
+    });
+    Route::resource('repair_parts', RepairPartController::class)->only(['index','show','destroy','store']);
 });
 
 require __DIR__.'/auth.php';

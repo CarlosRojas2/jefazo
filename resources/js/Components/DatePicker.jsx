@@ -6,8 +6,7 @@ import { enGB } from 'date-fns/locale';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 
 // ----------------------------------------------------------------------
-export default function Date({ value, slotProps,error }) {
-    const handleChange =()=>{}
+export default function Date({ value, onChange }) {
     return (
         <LocalizationProvider
             dateAdapter={AdapterDateFns}
@@ -16,9 +15,7 @@ export default function Date({ value, slotProps,error }) {
             <DatePicker
                 label="Fecha Entrada"
                 value={value}
-                onChange={(newValue) => {
-                    field.onChange(newValue);
-                }}
+                onChange={onChange}
                 slotProps={{
                     textField: {
                         fullWidth: true,

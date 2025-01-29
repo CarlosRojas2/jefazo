@@ -7,8 +7,7 @@ import Button from '@mui/material/Button';
 import { Iconify } from '@/Template/Components/iconify';
 import LoadingButton from '@mui/lab/LoadingButton';
 import DataGrid from '@/Components/DataGrid';
-import Form from '@/Pages/Managements/Customers/Form';
-const Diagnosis = ()=>{
+const RepairOrder = ()=>{
     const columns = [
         {
             field: 'id',
@@ -17,54 +16,42 @@ const Diagnosis = ()=>{
             headerClassName: 'super-app-theme--header',
         },
         {
-            field: 'full_names',
-            headerName: 'Nombres',
-            width: 400,
+            field: 'customer',
+            headerName: 'Cliente',
+            width: 300,
             filterable:false,
             headerClassName: 'super-app-theme--header',
         },
         {
-            field: 'dni',
-            headerName: 'Dni',
-            width: 150,
+            field: 'vehicle',
+            headerName: 'Vehículo',
+            width: 250,
             filterable:false,
             headerClassName: 'super-app-theme--header',
         },
         {
-            field: 'phone',
-            headerName: 'Teléfono',
-            width: 150,
+            field: 'problem',
+            headerName: 'Falla',
+            width: 250,
             filterable:false,
             headerClassName: 'super-app-theme--header',
         },
         {
-            field: 'address',
-            headerName: 'Dirección',
+            field: 'entry_date_time',
+            headerName: 'Fecha',
             width: 300,
             filterable:false,
             headerClassName: 'super-app-theme--header',
         }
     ];
     const [refresh, setRefresh] = useState(false);
-    const [openDialog, setOpenDialog] = useState(false);
-    const [loadingEdit, setLoadingEdit] = useState(false);
-    const [dataFormEdit, setDataFormEdit] = useState(null);
     const [selectedRecord, setSelectedRecord] = useState(null);
     const handleEdit=()=>{
         if(selectedRecord.length<=0){
             toast.warning('Por favor seleccione un registro para editar!');
             return;
         }
-        setLoadingEdit(true);
-        axios.get(route('customers.show',selectedRecord)).then(response => {
-            setDataFormEdit(response.data)
-            handleOpenDialog();
-        }).catch(error => {
-            console.error('Error al obtener los datos:',error);
-        })
-        .finally(()=>{
-            setLoadingEdit(false);
-        });
+        router.visit(route('repair_orders.edit',selectedRecord));
     };
     const handleDestroy=()=>{
         if(selectedRecord.length<=0){
@@ -80,19 +67,11 @@ const Diagnosis = ()=>{
             console.error('Error al obtener los datos:', error);
         });
     };
-    const handleOpenDialog = () => {
-        setOpenDialog(true);
-        setRefresh(false);
-    };
 
     const handleAdd = ()=>{
-        router.visit(route('diagnoses.create'));
+        router.visit(route('repair_orders.create'));
     }
 
-    const handleCloseDialog = () => {
-        setOpenDialog(false);
-        setDataFormEdit(null);
-    };
     const handleSelectedRow = (data) => {
         setSelectedRecord(data);
     };
@@ -122,7 +101,6 @@ const Diagnosis = ()=>{
                     color="info"
                     startIcon={<Iconify icon="mingcute:edit-line" />}
                     onClick={handleEdit}
-                    loading={loadingEdit}
                     loadingPosition="start"
                 >
                     Modificar
@@ -141,24 +119,12 @@ const Diagnosis = ()=>{
                 returnSelectedRow={handleSelectedRow}
                 columns={columns}
                 refresh={refresh}
-                title="Administrar Diagnósticos"
-                path='customers.list'
+                title="Administrar Ordenes de reparación"
+                path='repair_orders.list'
                 dblClick={handleEdit}
-            />
-
-            {/* <Box display="flex" alignItems="center" mb={5}>
-                <Typography variant="h4" flexGrow={1}>
-                    Clientes
-                </Typography>
-            </Box> */}
-            <Form
-                open={openDialog}
-                handleClose={handleCloseDialog}
-                initFormData={dataFormEdit}
-                handleRefresh={refreshGrid}
             />
         </DashboardContent>
     );
 }
-Diagnosis.layout = page => <DashboardLayout children={page} title="Clientes" />
-export default Diagnosis
+RepairOrder.layout = page => <DashboardLayout children={page} title="Clientes" />
+export default RepairOrder
