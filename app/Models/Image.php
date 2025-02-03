@@ -6,4 +6,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Image extends Model{
     use SoftDeletes;
     protected $fillable=['repair_order_id','path'];
+
+    public function repairOrder(){
+        return $this->belongsTo(RepairOrder::class);
+    }
 }

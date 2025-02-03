@@ -42,6 +42,21 @@ const RepairOrder = ()=>{
             width: 300,
             filterable:false,
             headerClassName: 'super-app-theme--header',
+        },
+        {
+            field: 'status',
+            headerName: 'Estado',
+            width: 300,
+            filterable:false,
+            headerClassName: 'super-app-theme--header',
+            cellClassName: (params) => {
+                if (params.value === "INGRESADO") {
+                    return "status-registered";
+                } else if (params.value === "REVISADO") {
+                    return "status-diagnosed";
+                }
+                return "";
+            },
         }
     ];
     const [refresh, setRefresh] = useState(false);
@@ -53,6 +68,15 @@ const RepairOrder = ()=>{
         }
         router.visit(route('repair_orders.edit',selectedRecord));
     };
+
+    const handleDiagnose=()=>{
+        if(selectedRecord.length<=0){
+            toast.warning('Por favor seleccione un registro para diagnosticar!');
+            return;
+        }
+        router.visit(route('repair_orders.show',selectedRecord));
+    };
+
     const handleDestroy=()=>{
         if(selectedRecord.length<=0){
             toast.warning('Por favor seleccione un registro para eliminar!');
@@ -80,7 +104,7 @@ const RepairOrder = ()=>{
     }
     return (
         <DashboardContent>
-            <Head title="Clientes" />
+            <Head title="Ordenes de reparación" />
             <Stack
                 direction="row"
                 spacing={1}
@@ -112,6 +136,15 @@ const RepairOrder = ()=>{
                     onClick={handleDestroy}
                 >
                     Anular
+                </Button>
+
+                <Button
+                    variant="contained"
+                    color="success"
+                    startIcon={<Iconify icon="noto:man-mechanic-medium-light-skin-tone" />}
+                    onClick={handleDiagnose}
+                >
+                    Diagnosticar
                 </Button>
             </Stack>
 

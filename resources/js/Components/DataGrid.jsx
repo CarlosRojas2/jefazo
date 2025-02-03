@@ -205,7 +205,9 @@ export default function DataGridDemo({ returnSelectedRow,columns,refresh,title,p
                         },
                         '.MuiDataGrid-columnHeaderTitle': {
                             fontWeight: 'bold !important',
-                        }
+                        },
+                        "& .status-registered": { color: 'error.main' }, // Rojo claro con rojo oscuro
+                        "& .status-diagnosed": { color: "success.main" }, // Verde claro con verde oscuro
                     }}
                     onRowDoubleClick={dblClick}
                     // localeText={esES.components.MuiDataGrid.defaultProps.localeText}

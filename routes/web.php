@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ConceptController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RepairOrderController;
 use App\Http\Controllers\RepairPartController;
@@ -11,10 +12,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-
-Route::get('/', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/', [HomeController::class,'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/dni/{document}', [WebServiceController::class,'searchDni'])->where('document', '[0-9]+')->name('dni.search');

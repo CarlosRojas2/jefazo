@@ -12,6 +12,7 @@ return new class extends Migration{
             $table->string('problem');
             $table->string('observations');
             $table->timestamp('entry_date_time');
+            $table->string('status');
             $table->timestamps();
             $table->softDeletes();
         });

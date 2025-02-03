@@ -1,9 +1,12 @@
 <?php
 namespace App\Http\Controllers;
+
+use App\Actions\RepairOrderStoreAction;
 use App\Models\RepairOrder;
 use App\Models\Vehicle;
 use App\Services\DataTable;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
@@ -17,24 +20,17 @@ class RepairOrderController extends Controller{
     }
 
     public function edit($id){
-        $record=RepairOrder::findOrFail($id);
+        $record=RepairOrder::findOrFail($id)->load('images');
         return Inertia::render("RepairOrders/Create",[
             'repair_order'=>$record
         ]);
     }
 
-    public function store(Request $request){
-        $repair_order = RepairOrder::find($request->id);
-        if(is_null($repair_order)){
-            $repair_order=new RepairOrder();
-        }
-        $repair_order->fill( $request->all());
-        $repair_order->save();
-        return redirect()->route("repair_orders.index");
-    }
-
-    public function show(RepairOrder $repair_order){
-        return response()->json($repair_order);
+    public function store(Request $request,RepairOrderStoreAction $store){
+        return DB::transaction(function() use ($request,$store){
+            $store->execute($request->all());
+            return redirect()->route("repair_orders.index");
+        });
     }
 
     public function list(Request $request){
@@ -45,7 +41,8 @@ class RepairOrderController extends Controller{
             correlative,
             entry_date_time,
             cus.full_names as customer,
-            COALESCE(CONCAT_WS(' - ', ve.plate, ve.brand, ve.color), '') as vehicle
+            COALESCE(CONCAT_WS(' - ', ve.plate, ve.brand, ve.color), '') as vehicle,
+            status
         ")
         ->join('customers as cus', 'cus.id','repair_orders.customer_id')
         ->join('vehicles as ve', 've.id','repair_orders.vehicle_id')
@@ -80,5 +77,12 @@ class RepairOrderController extends Controller{
             $images[] = $relativePath;
         }
         return $images;
+    }
+
+    public function show($id){
+        $record=RepairOrder::findOrFail($id)->load(['customer','vehicle']);
+        return Inertia::render("RepairOrders/Diagnose",[
+            'repair_order'=>$record
+        ]);
     }
 }

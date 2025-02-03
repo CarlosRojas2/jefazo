@@ -1,38 +1,25 @@
-import { Head } from '@inertiajs/react';
+import { Head,useForm,usePage,router } from '@inertiajs/react';
 import { DashboardLayout,DashboardContent } from '@/Layouts/dashboard';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Stack from '@mui/material/Stack';
-import { useCallback, useState,useEffect,useMemo } from 'react';
+import { useState,useEffect } from 'react';
 import { Iconify } from '@/Template/Components/iconify';
-import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import { toast } from '@/Template/Components/snackbar';
-import { useForm,usePage,router  } from '@inertiajs/react';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
 import Grid from '@mui/material/Unstable_Grid2';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import OutlinedInput from '@mui/material/OutlinedInput';
 import InputLabel from '@mui/material/InputLabel';
 import PartialCustomer from '@/Pages/Partials/PartialCustomer';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Table from '@mui/material/Table';
-import Paper from '@mui/material/Paper';
-import TableCell from '@mui/material/TableCell';
-import TableBody from '@mui/material/TableBody';
-import Tooltip from '@mui/material/Tooltip';
-import SearchDocument from '@/Components/SearchDocument';
 import DatePicker from '@/Components/DatePicker';
 import Filepond from '@/Components/Filepond';
-import { format } from 'date-fns';
+import { format,parse } from 'date-fns';
+import { setFormData } from '@/Utils/functions';
 export default function Form() {
     const { data, setData, post, processing, errors,transform } = useForm({
         id:-1,
@@ -40,25 +27,30 @@ export default function Form() {
         vehicle_id: '',
         observations:'',
         problem:'',
-        correlative:'00123',
-        entry_date_time:null,
+        correlative:'..',
+        entry_date_time: new Date(),
+        status:'INGRESADO',
         images:[]
     });
     const { repair_order } = usePage().props;
     const [title,setTitle]=useState('Registrar Órden de reparación');
     const [vehicles,setVehicles]=useState([]);
-    const memoizedRepairOrder = useMemo(() => repair_order, [repair_order]);
-
     useEffect(() => {
-        console.log('memoizedRepairOrder',memoizedRepairOrder)
-        if (memoizedRepairOrder !== undefined) {
+        if (repair_order !== undefined) {
             setForm();
             setTitle('Editar Órden de reparación');
         }
-    }, [memoizedRepairOrder]);
+    }, [repair_order]);
     const setForm = ()=>{
-        console.log(repair_order);
-        setData(data, repair_order);
+        console.log('parse(repair_order.entry_date_time',parse(repair_order.entry_date_time, "yyyy-MM-dd HH:mm:ss", new Date()))
+        setFormData(data, repair_order);
+        let images=[];
+        repair_order.images.forEach(image => {
+            images.push(image.path)
+        });
+        setData(old=>({...old,images:images}));
+        setData(old=>({...old,entry_date_time:parse(repair_order.entry_date_time, "yyyy-MM-dd HH:mm:ss", new Date())}));
+        console.log('entry_date_time',data.entry_date_time)
     }
     function handleSubmit(event) {
         event.preventDefault()
@@ -75,7 +67,9 @@ export default function Form() {
     const setCustomer = (customer_id,vehicles)=>{
         if(Array.isArray(vehicles) && vehicles.length > 0){
             setVehicles(vehicles);
-            setData(old=>({...old,vehicle_id:vehicles[0].id}));
+            if(!repair_order){
+                setData(old=>({...old,vehicle_id:vehicles[0].id}));
+            }
         }else{
             setVehicles([]);
         }
@@ -133,7 +127,7 @@ export default function Form() {
                                         <Grid xs={12} md={4} lg={4}>
                                             <PartialCustomer
                                                 path='customers.search'
-                                                id={data.id!=-1?data.customer_id:null}
+                                                id={repair_order?repair_order.customer_id:null}
                                                 handleSet={setCustomer}
                                                 error={errors.customer_id}
                                             >
@@ -169,7 +163,9 @@ export default function Form() {
                                         <Grid xs={6} md={3} lg={3}>
                                             <TextField
                                                 label="Nro orden"
-                                                defaultValue={data.correlative}
+                                                value={data.correlative}
+                                                name="correlative"
+                                                onChange={e => setData('correlative', e.target.value)}
                                                 size="small"
                                                 fullWidth
                                                 inputProps={{
@@ -183,7 +179,7 @@ export default function Form() {
                                     <Grid container spacing={1} sx={{pt:1}}>
                                         <Grid xs={12} md={12} lg={12}>
                                             <TextField
-                                                label="Falla"
+                                                label="Requerimiento del cliente"
                                                 name="problem"
                                                 value={data.problem}
                                                 onChange={e => setData('problem', e.target.value)}

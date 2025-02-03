@@ -14,4 +14,12 @@ class RepairOrder extends Model{
     public function images(){
         return $this->hasMany(Image::class);
     }
+
+    public function customer(){
+        return $this->belongsTo(Customer::class);
+    }
+
+    public function vehicle(){
+        return $this->belongsTo(Vehicle::class);
+    }
 }
