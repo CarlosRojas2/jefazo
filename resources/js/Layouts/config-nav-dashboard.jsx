@@ -10,11 +10,6 @@ export const navData = [
     {
         title: 'Clientes',
         path: 'customers.index',
-        icon: icon('ic-analytics')
-    },
-    {
-        title: 'Conceptos',
-        path: 'concepts.index',
         icon: icon('ic-user')
     },
     {
@@ -23,13 +18,19 @@ export const navData = [
         icon: icon('ic-cart')
     },
     {
+        title: 'Servicios',
+        path: 'services.index',
+        icon: icon('ic-course')
+    },
+
+    {
         title: 'Repuestos',
         path: 'repair_parts.index',
-        icon: icon('ic-cart')
+        icon: icon('ic-parameter')
     },
     {
         title: 'Órdenes de Rep.',
         path: 'repair_orders.index',
-        icon: icon('ic-cart')
+        icon: icon('ic-folder')
     }
 ];

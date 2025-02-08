@@ -13,7 +13,7 @@ import Grid from '@mui/material/Unstable_Grid2';
 
 export default function Form({ open,handleClose,initFormData,handleRefresh }){
     const theme = useTheme();
-    const [title,setTitle]=useState('Registrar Concepto');
+    const [title,setTitle]=useState('Registrar Servicio');
     const { reset, data, setData, post, processing, errors } = useForm({
         id:-1,
         description:''
@@ -21,16 +21,16 @@ export default function Form({ open,handleClose,initFormData,handleRefresh }){
     useMemo(()=>{
         if(initFormData!==null){
             setData(initFormData);
-            setTitle('Editar Concepto');
+            setTitle('Editar Servicio');
         }else{
             reset();
-            setTitle('Registrar Concepto');
+            setTitle('Registrar Servicio');
         }
     },[initFormData]);
 
     function handleSubmit(e) {
         e.preventDefault()
-        post(route('concepts.store'),{
+        post(route('services.store'),{
             onSuccess:()=>{
                 toast.success('Datos guardados con éxito!');
                 reset();

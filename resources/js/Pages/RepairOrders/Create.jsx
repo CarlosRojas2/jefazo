@@ -160,6 +160,7 @@ export default function Form() {
                                             >
                                             </DatePicker>
                                         </Grid>
+
                                         <Grid xs={6} md={3} lg={3}>
                                             <TextField
                                                 label="Nro orden"
@@ -174,6 +175,7 @@ export default function Form() {
                                                 }}
                                             />
                                         </Grid>
+                                        
                                     </Grid>
 
                                     <Grid container spacing={1} sx={{pt:1}}>

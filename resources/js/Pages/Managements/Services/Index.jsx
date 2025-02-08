@@ -7,8 +7,8 @@ import Button from '@mui/material/Button';
 import { Iconify } from '@/Template/Components/iconify';
 import LoadingButton from '@mui/lab/LoadingButton';
 import DataGrid from '@/Components/DataGrid';
-import Form from '@/Pages/Managements/Concepts/Form';
-const Concept = ()=>{
+import Form from '@/Pages/Managements/Services/Form';
+const Service = ()=>{
     const columns = [
         {
             field: 'id',
@@ -35,7 +35,7 @@ const Concept = ()=>{
             return;
         }
         setLoadingEdit(true);
-        axios.get(route('concepts.show',selectedRecord)).then(response => {
+        axios.get(route('services.show',selectedRecord)).then(response => {
             setDataFormEdit(response.data)
             handleOpenDialog();
         }).catch(error => {
@@ -50,9 +50,9 @@ const Concept = ()=>{
             toast.warning('Por favor seleccione un registro para eliminar!');
             return;
         }
-        axios.delete(route('concepts.destroy',selectedRecord))
+        axios.delete(route('services.destroy',selectedRecord))
         .then(response => {
-            toast.success('El Concepto se eliminó con éxito!');
+            toast.success('El Servicio se eliminó con éxito!');
             refreshGrid();
         })
         .catch(error => {
@@ -75,7 +75,7 @@ const Concept = ()=>{
     }
     return (
         <DashboardContent>
-            <Head title="Conceptos" />
+            <Head title="Servicios" />
             <Stack
                 direction="row"
                 spacing={1}
@@ -115,8 +115,8 @@ const Concept = ()=>{
                 returnSelectedRow={handleSelectedRow}
                 columns={columns}
                 refresh={refresh}
-                title="Administrar Conceptos"
-                path='concepts.list'
+                title="Administrar Servicios"
+                path='services.list'
                 dblClick={handleEdit}
             />
             <Form
@@ -128,5 +128,5 @@ const Concept = ()=>{
         </DashboardContent>
     );
 }
-Concept.layout = page => <DashboardLayout children={page} title="Conceptos" />
-export default Concept
+Service.layout = page => <DashboardLayout children={page} title="Servicios" />
+export default Service

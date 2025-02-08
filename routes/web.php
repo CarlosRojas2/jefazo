@@ -1,16 +1,13 @@
 <?php
-
-use App\Http\Controllers\ConceptController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RepairOrderController;
 use App\Http\Controllers\RepairPartController;
+use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\WebServiceController;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 Route::get('/', [HomeController::class,'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -27,10 +24,11 @@ Route::middleware('auth')->group(function () {
     Route::resource('customers', CustomerController::class)->only(['index','show','destroy','store']);
 
     // Rutas para conceptos
-    Route::prefix('concepts')->name('concepts.')->group(function () {
-        Route::get('/list', [ConceptController::class,'list'])->name('list');
+    Route::prefix('services')->name('services.')->group(function () {
+        Route::get('/list', [ServiceController::class,'list'])->name('list');
+        Route::get('/search', [ServiceController::class,'autocomplete'])->name('search');
     });
-    Route::resource('concepts', ConceptController::class)->only(['index','show','destroy','store']);
+    Route::resource('services', ServiceController::class)->only(['index','show','destroy','store']);
 
     // Rutas para conceptos
     Route::prefix('vehicles')->name('vehicles.')->group(function () {
@@ -42,12 +40,15 @@ Route::middleware('auth')->group(function () {
     Route::prefix('repair_orders')->name('repair_orders.')->group(function () {
         Route::get('/list', [RepairOrderController::class,'list'])->name('list');
         Route::post('/upload', [RepairOrderController::class, 'upload'])->name('upload');
+        Route::post('/diagnose', [RepairOrderController::class, 'diagnose'])->name('diagnose');
     });
     Route::resource('repair_orders', RepairOrderController::class)->only(['index','create','edit','show','destroy','store']);
 
     // Rutas para respuestos de reparación
     Route::prefix('repair_parts')->name('repair_parts.')->group(function () {
         Route::get('/list', [RepairPartController::class,'list'])->name('list');
+        Route::get('/search', [RepairPartController::class,'autocomplete'])->name('search');
+
     });
     Route::resource('repair_parts', RepairPartController::class)->only(['index','show','destroy','store']);
 });

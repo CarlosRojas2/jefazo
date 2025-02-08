@@ -4,7 +4,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 return new class extends Migration{
     public function up(): void{
-        Schema::create('concepts', function (Blueprint $table) {
+        Schema::create('services', function (Blueprint $table) {
             $table->id();
             $table->string('description')->unique();
             $table->timestamps();
@@ -13,6 +13,6 @@ return new class extends Migration{
     }
 
     public function down(): void{
-        Schema::dropIfExists('concepts');
+        Schema::dropIfExists('services');
     }
 };

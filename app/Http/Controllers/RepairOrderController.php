@@ -85,4 +85,11 @@ class RepairOrderController extends Controller{
             'repair_order'=>$record
         ]);
     }
+
+    public function diagnose(Request $request,RepairOrderStoreAction $store){
+        return DB::transaction(function() use ($request,$store){
+            $store->diagnose($request->all());
+            return redirect()->route("repair_orders.index");
+        });
+    }
 }

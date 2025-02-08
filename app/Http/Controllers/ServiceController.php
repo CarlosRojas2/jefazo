@@ -1,32 +1,33 @@
 <?php
 namespace App\Http\Controllers;
-use App\Models\RepairPart;
+use Illuminate\Support\Str;
+use App\Models\Service;
 use App\Services\DataTable;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Illuminate\Support\Str;
-class RepairPartController extends Controller{
+
+class ServiceController extends Controller{
     public function index(){
-        return Inertia::render("Managements/RepairParts/Index");
+        return Inertia::render("Managements/Services/Index");
     }
 
     public function store(Request $request){
-        $repair_part = RepairPart::find($request->id);
-        if(is_null($repair_part)){
-            $repair_part=new RepairPart();
+        $service = Service::find($request->id);
+        if(is_null($service)){
+            $service=new Service();
         }
-        $repair_part->fill( $request->all());
-        $repair_part->save();
-        return redirect()->route("repair_parts.index");
+        $service->fill( $request->all());
+        $service->save();
+        return redirect()->route("services.index");
     }
 
-    public function show(RepairPart $repair_part){
-        return response()->json($repair_part);
+    public function show(Service $service){
+        return response()->json($service);
     }
 
     public function list(Request $request){
         $grid=new DataTable($request);
-        $grid->of(RepairPart::selectRaw("id,description")
+        $grid->of(Service::selectRaw("id,description")
         ->orderByDesc('id'));
         $result=$grid->json();
         return response()->json($result);
@@ -35,7 +36,7 @@ class RepairPartController extends Controller{
     public function autocomplete(Request $request){
         $search='%'.Str::upper($request->input('search')).'%';
         $id = $request->id;
-        $records=RepairPart::select('id','description')
+        $records=Service::select('id','description')
         ->where(function($query) use($id,$search){
             if($id){
                 $query->where('id',$id);
