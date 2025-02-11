@@ -12,8 +12,8 @@ import { AuthLayout } from '@/Layouts/auth';
 import { Head, useForm } from '@inertiajs/react';
 export default function Login({ status, canResetPassword }) {
     const { data, setData, post, processing, errors, reset } = useForm({
-        email: '',
-        password: '',
+        email: 'jefazo@gmail.com',
+        password: '12345678',
         remember: false,
     });
     const [showPassword, setShowPassword] = useState(false);

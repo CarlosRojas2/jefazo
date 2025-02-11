@@ -41,6 +41,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/list', [RepairOrderController::class,'list'])->name('list');
         Route::post('/upload', [RepairOrderController::class, 'upload'])->name('upload');
         Route::post('/diagnose', [RepairOrderController::class, 'diagnose'])->name('diagnose');
+        Route::get('/print/{id}', [RepairOrderController::class, 'print'])->name('print');
+
     });
     Route::resource('repair_orders', RepairOrderController::class)->only(['index','create','edit','show','destroy','store']);
 

@@ -20,6 +20,7 @@ import DatePicker from '@/Components/DatePicker';
 import Filepond from '@/Components/Filepond';
 import { format,parse } from 'date-fns';
 import { setFormData } from '@/Utils/functions';
+import DigitalSignature from "@/Components/DigitalSignature";
 export default function Form() {
     const { data, setData, post, processing, errors,transform } = useForm({
         id:-1,
@@ -30,7 +31,8 @@ export default function Form() {
         correlative:'..',
         entry_date_time: new Date(),
         status:'INGRESADO',
-        images:[]
+        images:[],
+        signature:''
     });
     const { repair_order } = usePage().props;
     const [title,setTitle]=useState('Registrar Órden de reparación');
@@ -42,7 +44,6 @@ export default function Form() {
         }
     }, [repair_order]);
     const setForm = ()=>{
-        console.log('parse(repair_order.entry_date_time',parse(repair_order.entry_date_time, "yyyy-MM-dd HH:mm:ss", new Date()))
         setFormData(data, repair_order);
         let images=[];
         repair_order.images.forEach(image => {
@@ -50,10 +51,14 @@ export default function Form() {
         });
         setData(old=>({...old,images:images}));
         setData(old=>({...old,entry_date_time:parse(repair_order.entry_date_time, "yyyy-MM-dd HH:mm:ss", new Date())}));
-        console.log('entry_date_time',data.entry_date_time)
     }
     function handleSubmit(event) {
         event.preventDefault()
+        console.log('data.signature',data.signature)
+        if(data.signature==''){
+            toast.warning('La firma del cliente es obligatorio!');
+            return;
+        }
         transform((data) => ({
             ...data,
             entry: data.entry_date_time ? format(data.entry_date_time, 'yyyy-MM-dd') : null
@@ -84,11 +89,10 @@ export default function Form() {
         if(images){
             setData(old=>({...old,images:images}));
         }
-        console.log('images',images);
     };
 
-    const setEntryDateTime=(date)=>{
-
+    const handleSaveSignature = (signatureData) => {
+        setData(old=>({...old,signature:signatureData}));
     };
 
     return (
@@ -175,7 +179,7 @@ export default function Form() {
                                                 }}
                                             />
                                         </Grid>
-                                        
+
                                     </Grid>
 
                                     <Grid container spacing={1} sx={{pt:1}}>
@@ -212,12 +216,21 @@ export default function Form() {
                                     </Grid>
 
                                     <Grid container spacing={1} sx={{pt:1}}>
-                                        <Grid xs={12} md={12} lg={12}>
+                                        <Grid xs={12} md={6} lg={6}>
+                                            <Stack spacing={1} direction="row" alignItems="center">
+                                                <Typography variant="h5"> Imagenes anexadas: </Typography>
+                                            </Stack>
                                             <Filepond
                                                 vehicle={data.vehicle_id}
                                                 images={data.images}
                                                 handleSet={setImages}
                                             ></Filepond>
+                                        </Grid>
+                                        <Grid xs={12} md={6} lg={6}>
+                                            <Stack spacing={1} direction="row" alignItems="center">
+                                                <Typography variant="h5"> Firma: </Typography>
+                                            </Stack>
+                                            <DigitalSignature onSave={handleSaveSignature} />
                                         </Grid>
                                     </Grid>
 

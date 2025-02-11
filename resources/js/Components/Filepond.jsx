@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { usePage } from '@inertiajs/react';
 import { FilePond, registerPlugin } from 'react-filepond';
 // Importa los plugins
 import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
@@ -14,6 +15,7 @@ registerPlugin(FilePondPluginImagePreview,FilePondPluginFilePoster);
 import { toast } from '@/Template/Components/snackbar';
 
 export default function Filepond({vehicle,images,handleSet}){
+    const { csrf_token } = usePage().props;
     const [files, setFiles] = useState([]);
     const handleFilePondInit = (pond) => {
         if(Array.isArray(images)&& images.length > 0){
@@ -33,13 +35,12 @@ export default function Filepond({vehicle,images,handleSet}){
         }
     };
     const serverConfig ={
-        timeout:'7000',
         url: '',
         process: {
             url: '/repair_orders/upload',
             method: 'POST',
             headers: {
-                'X-CSRF-TOKEN': document.head.querySelector('meta[name="csrf-token"]').content,
+                'X-CSRF-TOKEN': csrf_token,
             },
             ondata: (formData) => {
                 if(!vehicle){

@@ -1,21 +1,38 @@
 <?php
 namespace App\Actions;
-
 use App\Models\Image;
 use App\Models\RepairOrder;
+use Illuminate\Support\Facades\Storage;
+
 class RepairOrderStoreAction{
     public function execute($attributes){
         $repair_order = RepairOrder::find($attributes['id']);
         if(is_null($repair_order)){
-            // $correlative=RepairOrder::first();
-            // dd($correlative);
-
             $repair_order = new RepairOrder();
         }
         $this->fill($repair_order,$attributes);
+        if($attributes['id']<1){//solo cuando crea
+            $repair_order->correlative=$this->generateCorrelative();
+            // Decodificar la imagen base64
+            $signature = str_replace('data:image/png;base64,', '', $attributes['signature']);
+            $signature = str_replace(' ', '+', $signature);
+            $imageSignature = base64_decode($signature);
+            // Generar un nombre único para la imagen
+            $fileName = uniqid() . '.png';
+            Storage::disk('public')->put("signatures/{$fileName}",$imageSignature);
+            $repair_order->signature="signatures/{$fileName}";
+        }
         $repair_order->save();
         $this->saveImages($repair_order,$attributes['images']);
         return $repair_order;
+    }
+
+    private function generateCorrelative(){
+        // Bloquear la última fila con el mayor correlativo
+        $last = RepairOrder::lockForUpdate()->orderBy('correlative', 'desc')->first();
+        // Incrementar y rellenar con ceros a la izquierda
+        $nextCorrelative = $last ? $last->correlative + 1 : 1;
+        return str_pad($nextCorrelative, 3, '0', STR_PAD_LEFT);
     }
 
     public function fill(RepairOrder $repair_order, array $attributes){

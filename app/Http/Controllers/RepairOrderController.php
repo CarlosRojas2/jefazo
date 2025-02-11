@@ -1,6 +1,6 @@
 <?php
 namespace App\Http\Controllers;
-
+use App\Actions\Pdfs\RepairOrderPrintAction;
 use App\Actions\RepairOrderStoreAction;
 use App\Models\RepairOrder;
 use App\Models\Vehicle;
@@ -91,5 +91,9 @@ class RepairOrderController extends Controller{
             $store->diagnose($request->all());
             return redirect()->route("repair_orders.index");
         });
+    }
+
+    public function print($id, RepairOrderPrintAction $print){
+        return $print->execute($id);
     }
 }

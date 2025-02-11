@@ -13,6 +13,7 @@ return new class extends Migration{
             $table->string('observations');
             $table->timestamp('entry_date_time');
             $table->string('status');
+            $table->string('signature');
             $table->timestamps();
             $table->softDeletes();
         });

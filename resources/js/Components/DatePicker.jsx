@@ -7,8 +7,6 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 
 // ----------------------------------------------------------------------
 export default function Date({ value, onChange }) {
-    console.log('repair_order.entry_date_time',value)
-
     return (
         <LocalizationProvider
             dateAdapter={AdapterDateFns}

@@ -7,6 +7,7 @@ import Button from '@mui/material/Button';
 import { Iconify } from '@/Template/Components/iconify';
 import LoadingButton from '@mui/lab/LoadingButton';
 import DataGrid from '@/Components/DataGrid';
+import axios from 'axios';
 const RepairOrder = ()=>{
     const columns = [
         {
@@ -102,6 +103,24 @@ const RepairOrder = ()=>{
     const refreshGrid=()=>{
         setRefresh(true);
     }
+    const handleGeneratePdf = async () => {
+        if(selectedRecord.length<=0){
+            toast.warning('Por favor seleccione un registro para imprimir!');
+            return;
+        }
+        try {
+            const response = await axios.get(route('repair_orders.print',1), {
+                responseType: 'blob', // Necesario para manejar archivos binarios
+            });
+            // Crear una URL para el blob recibido
+            const blob = new Blob([response.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(blob);
+            // Abrir el PDF en una nueva ventana
+            window.open(url);
+        } catch (error) {
+            console.error('Error al generar el PDF:', error);
+        }
+    };
     return (
         <DashboardContent>
             <Head title="Ordenes de reparación" />
@@ -140,11 +159,20 @@ const RepairOrder = ()=>{
 
                 <Button
                     variant="contained"
-                    color="success"
+                    color="secondary"
                     startIcon={<Iconify icon="noto:man-mechanic-medium-light-skin-tone" />}
                     onClick={handleDiagnose}
                 >
                     Diagnosticar
+                </Button>
+
+                <Button
+                    variant="contained"
+                    color="success"
+                    startIcon={<Iconify icon="mingcute:print-fill" />}
+                    onClick={handleGeneratePdf}
+                >
+                    Imprimir
                 </Button>
             </Stack>
 

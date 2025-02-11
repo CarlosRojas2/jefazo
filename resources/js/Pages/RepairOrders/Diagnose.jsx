@@ -203,7 +203,7 @@ export default function Form() {
                                                 ></PartialService>
 
                                             </Toolbar>
-                                            <TableContainer sx={{ maxHeight: 180 }} component={Paper}>
+                                            <TableContainer sx={{ maxHeight: 220 }} component={Paper}>
                                                 <Table stickyHeader aria-label="sticky table" size="small">
                                                     <TableHead>
                                                         <TableRow sx={{ height: 10 }}>
@@ -223,14 +223,14 @@ export default function Form() {
                                                                         {service.service}
                                                                     </Typography>
                                                                 </TableCell>
-                                                                <TableCell sx={{py:0}}>
+                                                                <TableCell sx={{py:1}}>
                                                                     <TextField
                                                                         value={service.observations}
                                                                         onChange={(e) => handleObservations(index, e.target.value)}
                                                                         size='small'
                                                                         key={index}
                                                                         inputProps={{onFocus:(event)=>event.target.select()}}
-                                                                        sx={{ '& .MuiInputBase-root': { height: 27 } }}
+                                                                        sx={{ '& .MuiInputBase-root': { height: 25,pa:0 } }}
                                                                     />
                                                                 </TableCell>
                                                                 <TableCell align="center" sx={{px:1,py:0}}>
@@ -289,7 +289,7 @@ export default function Form() {
                                                     handleSet={setRepairPart}
                                                 ></PartialRepairPart>
                                             </Toolbar>
-                                            <TableContainer sx={{ maxHeight: 180 }} component={Paper}>
+                                            <TableContainer sx={{ maxHeight: 220 }} component={Paper}>
                                                 <Table stickyHeader aria-label="sticky table" size="small">
                                                     <TableHead>
                                                         <TableRow sx={{ height: 10 }}>
@@ -309,7 +309,7 @@ export default function Form() {
                                                                         {repair_part.repair_part}
                                                                     </Typography>
                                                                 </TableCell>
-                                                                <TableCell sx={{py:0}}>
+                                                                <TableCell sx={{py:1}}>
                                                                     <TextField
                                                                         value={repair_part.quantity}
                                                                         onChange={(e) => handleQuantity(index, e.target.value)}

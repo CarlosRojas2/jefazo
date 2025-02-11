@@ -8,6 +8,7 @@ return new class extends Migration{
             $table->id();
             $table->foreignId('repair_order_id')->constrained()->onDelete('cascade');
             $table->string('path');
+            $table->softDeletes();
             $table->timestamps();
         });
     }
