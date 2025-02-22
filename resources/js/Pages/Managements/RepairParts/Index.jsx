@@ -53,11 +53,13 @@ const RepairPart = ()=>{
         }
         axios.delete(route('repair_parts.destroy',selectedRecord))
         .then(response => {
-            toast.success('El Cliente se eliminó con éxito!');
+            toast.success(response.data.message);
             refreshGrid();
         })
         .catch(error => {
-            console.error('Error al obtener los datos:', error);
+            if (error.response) {
+                toast.error(error.response.data.message); // Muestra el mensaje de error si el backend lo envió
+            }
         });
     };
     const handleOpenDialog = () => {

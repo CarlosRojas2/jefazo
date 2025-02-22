@@ -3,7 +3,9 @@ namespace App\Http\Controllers;
 use App\Actions\Pdfs\RepairOrderPrintAction;
 use App\Actions\RepairOrderStoreAction;
 use App\Models\RepairOrder;
+use App\Models\RepairOrderInspection;
 use App\Models\Vehicle;
+use App\Models\VehiclePart;
 use App\Services\DataTable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -80,7 +82,7 @@ class RepairOrderController extends Controller{
     }
 
     public function show($id){
-        $record=RepairOrder::findOrFail($id)->load(['customer','vehicle']);
+        $record=RepairOrder::with(['customer','vehicle','services','parts'])->findOrFail($id);
         return Inertia::render("RepairOrders/Diagnose",[
             'repair_order'=>$record
         ]);
@@ -95,5 +97,62 @@ class RepairOrderController extends Controller{
 
     public function print($id, RepairOrderPrintAction $print){
         return $print->execute($id);
+    }
+
+    public function inspection($id){
+        $record=RepairOrder::with([
+            'customer',
+            'vehicle',
+            'services',
+            'parts',
+            'inspections'=>function($i){
+                $i->with('vehiclePart');
+            }
+        ])->findOrFail($id);
+        return Inertia::render("RepairOrders/Inspection",[
+            'repair_order'=>$record,
+        ]);
+    }
+
+    public function generateInspection(Request $request){
+        // Obtener todas las partes del vehículo
+        $vehicleParts = VehiclePart::all();
+        // Obtener inspecciones existentes de la orden de reparación
+        $existingInspections = RepairOrderInspection::where('repair_order_id', $request->repair_order_id)
+        ->pluck('id', 'vehicle_part_id');
+        // Recorrer las partes del vehículo
+        foreach ($vehicleParts as $part) {
+            if (!isset($existingInspections[$part->id])) {
+                // Si no existe la inspección, se crea una nueva
+                RepairOrderInspection::create([
+                    'repair_order_id' => $request->repair_order_id,
+                    'vehicle_part_id' => $part->id,
+                    'status' => 'good',
+                    'observations' => '...',
+                ]);
+            } else {
+                // Buscar si hay inspección en la petición para esta parte
+                foreach ($request->inspections as $inspection) {
+                    if ($inspection['vehicle_part_id'] == $part->id) {
+                        // Actualizar el registro existente
+                        RepairOrderInspection::where('repair_order_id', $request->repair_order_id)
+                            ->where('vehicle_part_id', $part->id)
+                            ->update([
+                                'status' => $inspection['status'] ?? 'good',
+                                'observations' => $inspection['observations'] ?? '...',
+                            ]);
+                    }
+                }
+            }
+        }
+
+    }
+
+    public function destroy(RepairOrder $repair_order){
+        $repair_order->delete();
+        return response()->json([
+            'success' => true,
+            'message' => 'ordén de reparación eliminada correctamente.'
+        ]);
     }
 }

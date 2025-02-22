@@ -2,6 +2,8 @@
 namespace App\Http\Controllers;
 use Illuminate\Support\Str;
 use App\Models\Customer;
+use App\Models\RepairOrder;
+use App\Models\Vehicle;
 use App\Services\DataTable;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -12,6 +14,20 @@ class CustomerController extends Controller{
     }
 
     public function store(Request $request){
+        // Validación de datos
+        $request->validate([
+            'dni' => 'required|string|unique:customers,dni,NULL,id,deleted_at,NULL',
+            'full_names' => 'required|string',
+        ]);
+        // Buscar cliente por DNI, incluso si está eliminado
+        $customer = Customer::withTrashed()->where('dni', $request->dni)->first();
+        if ($customer) {
+            // Si el cliente estaba eliminado, lo restauramos
+            if ($customer->trashed()) {
+                $customer->restore();
+            }
+            return redirect()->route("customers.index");
+        }
         $customer=Customer::find($request->id);
         if(is_null($customer)){
             $customer = new Customer();
@@ -34,8 +50,23 @@ class CustomerController extends Controller{
     }
 
     public function destroy(Customer $customer){
+        // Verificar si el cliente tiene vehiculos asociadas
+        $vehicleExists = Vehicle::where('customer_id', $customer->id)->exists();
+
+        if ($vehicleExists) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se puede eliminar el cliente porque tiene vehículos asociadas.'
+            ], 400); // Código 400 para indicar error en la solicitud
+        }
+
+        // Eliminar el cliente
         $customer->delete();
-        return response()->json('ok');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Cliente eliminado correctamente.'
+        ]);
     }
 
     public function autocomplete(Request $request){

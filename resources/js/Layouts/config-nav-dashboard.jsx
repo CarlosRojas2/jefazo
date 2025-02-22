@@ -29,6 +29,11 @@ export const navData = [
         icon: icon('ic-parameter')
     },
     {
+        title: 'Partes de vehículo',
+        path: 'vehicle_parts.index',
+        icon: icon('ic-parameter')
+    },
+    {
         title: 'Órdenes de Rep.',
         path: 'repair_orders.index',
         icon: icon('ic-folder')

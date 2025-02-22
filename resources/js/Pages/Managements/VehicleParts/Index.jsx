@@ -7,50 +7,23 @@ import Button from '@mui/material/Button';
 import { Iconify } from '@/Template/Components/iconify';
 import LoadingButton from '@mui/lab/LoadingButton';
 import DataGrid from '@/Components/DataGrid';
-import Form from '@/Pages/Managements/Vehicles/Form';
-const Vehicle = ()=>{
+import Form from '@/Pages/Managements/VehicleParts/Form';
+const VehiclePart = ()=>{
     const columns = [
         {
             field: 'id',
             headerName: '#',
-            width: 80,
+            width: 90,
             headerClassName: 'super-app-theme--header',
         },
         {
-            field: 'customer',
-            headerName: 'Representante',
-            width: 300,
+            field: 'description',
+            headerName: 'Descripción',
+            width: 400,
             filterable:false,
             headerClassName: 'super-app-theme--header',
-        },
-        {
-            headerName: 'Marca',
-            field: 'brand',
-            width: 200,
-            filterable:false,
-            headerClassName: 'super-app-theme--header',
-        },
-        {
-            field: 'model',
-            headerName: 'Modelo',
-            width: 200,
-            filterable:false,
-            headerClassName: 'super-app-theme--header',
-        },
-        {
-            field: 'plate',
-            headerName: 'placa',
-            width: 200,
-            filterable:false,
-            headerClassName: 'super-app-theme--header',
-        },
-        {
-            field: 'color',
-            headerName: 'Color',
-            width: 200,
-            filterable:false,
-            headerClassName: 'super-app-theme--header',
-        },
+        }
+
     ];
     const [refresh, setRefresh] = useState(false);
     const [openDialog, setOpenDialog] = useState(false);
@@ -63,7 +36,7 @@ const Vehicle = ()=>{
             return;
         }
         setLoadingEdit(true);
-        axios.get(route('vehicles.show',selectedRecord)).then(response => {
+        axios.get(route('vehicle_parts.show',selectedRecord)).then(response => {
             setDataFormEdit(response.data)
             handleOpenDialog();
         }).catch(error => {
@@ -78,7 +51,7 @@ const Vehicle = ()=>{
             toast.warning('Por favor seleccione un registro para eliminar!');
             return;
         }
-        axios.delete(route('vehicles.destroy',selectedRecord))
+        axios.delete(route('vehicle_parts.destroy',selectedRecord))
         .then(response => {
             toast.success(response.data.message);
             refreshGrid();
@@ -105,7 +78,7 @@ const Vehicle = ()=>{
     }
     return (
         <DashboardContent>
-            <Head title="Vehículos" />
+            <Head title="Partes de vehículo" />
             <Stack
                 direction="row"
                 spacing={1}
@@ -119,7 +92,7 @@ const Vehicle = ()=>{
                     startIcon={<Iconify icon="mingcute:add-line" />}
                     onClick={handleOpenDialog}
                 >
-                    Nuevo
+                    Nueva
                 </Button>
                 <LoadingButton
                     variant="contained"
@@ -145,10 +118,11 @@ const Vehicle = ()=>{
                 returnSelectedRow={handleSelectedRow}
                 columns={columns}
                 refresh={refresh}
-                title="Administrar Vehículos"
-                path='vehicles.list'
+                title="Partes de vehículo"
+                path='vehicle_parts.list'
                 dblClick={handleEdit}
             />
+
             <Form
                 open={openDialog}
                 handleClose={handleCloseDialog}
@@ -158,5 +132,5 @@ const Vehicle = ()=>{
         </DashboardContent>
     );
 }
-Vehicle.layout = page => <DashboardLayout children={page} title="Vehiculoa" />
-export default Vehicle
+VehiclePart.layout = page => <DashboardLayout children={page} title="Parte de veculosí" />
+export default VehiclePart

@@ -1,5 +1,7 @@
 <?php
 namespace App\Http\Controllers;
+
+use App\Models\RepairOrder;
 use App\Models\Vehicle;
 use App\Services\DataTable;
 use Illuminate\Http\Request;
@@ -31,4 +33,23 @@ class VehicleController extends Controller{
         $result=$grid->json();
         return response()->json($result);
     }
+
+    public function destroy(Vehicle $vehicle){
+        // Verificar si el vehiculo tiene ordenes asociadas
+        $orderExists = RepairOrder::where('vehicle_id', $vehicle->id)->exists();
+        if ($orderExists) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se puede eliminar el vehículo porque tiene ordenes de reparación asociadas.'
+            ], 400); // Código 400 para indicar error en la solicitud
+        }
+        // Eliminar el vehiculo
+        $vehicle->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Vehículo eliminado correctamente.'
+        ]);
+    }
+
 }

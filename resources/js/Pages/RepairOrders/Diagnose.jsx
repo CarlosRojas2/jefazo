@@ -4,11 +4,8 @@ import LoadingButton from '@mui/lab/LoadingButton';
 import Stack from '@mui/material/Stack';
 import { useCallback, useState,useEffect,useMemo } from 'react';
 import { Iconify } from '@/Template/Components/iconify';
-
 import PartialService  from '@/Pages/Partials/PartialService';
 import PartialRepairPart  from '@/Pages/Partials/PartialRepairPart';
-
-
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import { toast } from '@/Template/Components/snackbar';
@@ -22,7 +19,6 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import InputLabel from '@mui/material/InputLabel';
-import PartialCustomer from '@/Pages/Partials/PartialCustomer';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
@@ -39,7 +35,7 @@ export default function Form() {
         id:-1,
         status:'REVISADO',
         services:[],
-        repair_parts:[]
+        parts:[]
     });
     const { repair_order } = usePage().props;
     const [title,setTitle]=useState('');
@@ -51,6 +47,23 @@ export default function Form() {
     }, [repair_order]);
     const setForm = ()=>{
         setFormData(data, repair_order);
+        let services =[];
+        data.services.forEach((service)=>{
+            services.push({
+                id:service.id,
+                service:service.description,
+                observations:service.pivot.observations
+            });
+        });
+        let parts =[];
+        data.parts.forEach((part)=>{
+            parts.push({
+                id:part.id,
+                repair_part:part.description,
+                quantity:part.pivot.quantity
+            });
+        });
+        setData(old=>({...old,services:services,parts:parts}));
     }
     function handleSubmit(event) {
         event.preventDefault()
@@ -103,7 +116,7 @@ export default function Form() {
         if(!repair_part){
             return;
         }
-        const found = data.repair_parts.find((item)=>{
+        const found = data.parts.find((item)=>{
             return (item.id==repair_part.id);
         });
         if(found!=undefined){
@@ -111,7 +124,7 @@ export default function Form() {
             return;
         }
         const newData = {...data};
-        newData.repair_parts.push({
+        newData.parts.push({
             id:repair_part.id,
             repair_part:repair_part.description,
             quantity:1
@@ -120,17 +133,22 @@ export default function Form() {
     }
     const handleQuantity = (index, value) => {
         setData((prevState) => {
-            const updatedRepairParts = [...prevState.repair_parts]; // Crear una copia del arreglo
+            const updatedRepairParts = [...prevState.parts]; // Crear una copia del arreglo
             updatedRepairParts[index] = {
                 ...updatedRepairParts[index], // Copiar el objeto de la pieza de reparación actual
                 quantity: value,      // Actualizar el campo cantidad
             };
-            return { ...prevState, repair_parts: updatedRepairParts }; // Retornar el nuevo estado
+            return { ...prevState, parts: updatedRepairParts }; // Retornar el nuevo estado
         });
+    };
+    const handleRemovePart = (part)=>{
+        const newData = {...data};
+        newData.parts.splice(newData.parts.indexOf(part),1);
+        setData(newData);
     };
     return (
         <DashboardLayout>
-            <Head title='Registrar Órden de reparación'></Head>
+            <Head title='Diagnosticar'></Head>
             <DashboardContent>
                 <Stack
                     spacing={1.5}
@@ -207,8 +225,8 @@ export default function Form() {
                                                 <Table stickyHeader aria-label="sticky table" size="small">
                                                     <TableHead>
                                                         <TableRow sx={{ height: 10 }}>
-                                                            <TableCell width='10%'>Descripción</TableCell>
-                                                            <TableCell width='6%'>Observaciones</TableCell>
+                                                            <TableCell width='20%'>Descripción</TableCell>
+                                                            <TableCell width='60%'>Observaciones</TableCell>
                                                             <TableCell width='1%' align="center"></TableCell>
                                                         </TableRow>
                                                     </TableHead>
@@ -229,6 +247,7 @@ export default function Form() {
                                                                         onChange={(e) => handleObservations(index, e.target.value)}
                                                                         size='small'
                                                                         key={index}
+                                                                        fullWidth
                                                                         inputProps={{onFocus:(event)=>event.target.select()}}
                                                                         sx={{ '& .MuiInputBase-root': { height: 25,pa:0 } }}
                                                                     />
@@ -293,28 +312,29 @@ export default function Form() {
                                                 <Table stickyHeader aria-label="sticky table" size="small">
                                                     <TableHead>
                                                         <TableRow sx={{ height: 10 }}>
-                                                            <TableCell width='10%'>Descripción</TableCell>
+                                                            <TableCell width='60%'>Descripción</TableCell>
                                                             <TableCell width='6%'>Cantidad</TableCell>
                                                             <TableCell width='1%' align="center"></TableCell>
                                                         </TableRow>
                                                     </TableHead>
                                                     <TableBody>
-                                                        {data.repair_parts.map((repair_part,index) => (
+                                                        {data.parts.map((part,index) => (
                                                             <TableRow
-                                                                key={repair_part.id}
+                                                                key={part.id}
                                                                 sx={{ '&:last-child td, &:last-child th': { border: 0 },mineight:10 }}
                                                             >
                                                                 <TableCell sx={{px:1,py:0}}>
                                                                     <Typography variant="caption" display="block" gutterBottom>
-                                                                        {repair_part.repair_part}
+                                                                        {part.repair_part}
                                                                     </Typography>
                                                                 </TableCell>
                                                                 <TableCell sx={{py:1}}>
                                                                     <TextField
-                                                                        value={repair_part.quantity}
+                                                                        value={part.quantity}
                                                                         onChange={(e) => handleQuantity(index, e.target.value)}
                                                                         size='small'
                                                                         key={index}
+                                                                        fullWidth
                                                                         inputProps={{onFocus:(event)=>event.target.select()}}
                                                                         sx={{ '& .MuiInputBase-root': { height: 27 } }}
                                                                     />
@@ -339,6 +359,7 @@ export default function Form() {
                                                                             aria-label="delete"
                                                                             color="error"
                                                                             size='small'
+                                                                            onClick={()=>handleRemovePart(part)}
                                                                         >
                                                                             <Iconify icon="solar:trash-bin-trash-bold" />
                                                                         </IconButton>

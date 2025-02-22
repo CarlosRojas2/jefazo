@@ -6,6 +6,7 @@ use App\Http\Controllers\RepairOrderController;
 use App\Http\Controllers\RepairPartController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\VehicleController;
+use App\Http\Controllers\VehiclePartController;
 use App\Http\Controllers\WebServiceController;
 use Illuminate\Support\Facades\Route;
 
@@ -41,8 +42,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/list', [RepairOrderController::class,'list'])->name('list');
         Route::post('/upload', [RepairOrderController::class, 'upload'])->name('upload');
         Route::post('/diagnose', [RepairOrderController::class, 'diagnose'])->name('diagnose');
+        Route::get('/inspection/{id}', [RepairOrderController::class, 'inspection'])->name('inspection');
         Route::get('/print/{id}', [RepairOrderController::class, 'print'])->name('print');
-
+        Route::post('/generate-inspection', [RepairOrderController::class,'generateInspection'])->name('generate.inspection');
     });
     Route::resource('repair_orders', RepairOrderController::class)->only(['index','create','edit','show','destroy','store']);
 
@@ -50,9 +52,15 @@ Route::middleware('auth')->group(function () {
     Route::prefix('repair_parts')->name('repair_parts.')->group(function () {
         Route::get('/list', [RepairPartController::class,'list'])->name('list');
         Route::get('/search', [RepairPartController::class,'autocomplete'])->name('search');
-
     });
     Route::resource('repair_parts', RepairPartController::class)->only(['index','show','destroy','store']);
+
+    // Rutas para partes de vehiculo
+    Route::prefix('vehicle_parts')->name('vehicle_parts.')->group(function () {
+        Route::get('/list', [VehiclePartController::class,'list'])->name('list');
+        Route::get('/search', [VehiclePartController::class,'autocomplete'])->name('search');
+    });
+    Route::resource('vehicle_parts', VehiclePartController::class)->only(['index','show','destroy','store']);
 });
 
 require __DIR__.'/auth.php';

@@ -40,14 +40,14 @@ const RepairOrder = ()=>{
         {
             field: 'entry_date_time',
             headerName: 'Fecha',
-            width: 300,
+            width: 160,
             filterable:false,
             headerClassName: 'super-app-theme--header',
         },
         {
             field: 'status',
             headerName: 'Estado',
-            width: 300,
+            width: 130,
             filterable:false,
             headerClassName: 'super-app-theme--header',
             cellClassName: (params) => {
@@ -72,10 +72,18 @@ const RepairOrder = ()=>{
 
     const handleDiagnose=()=>{
         if(selectedRecord.length<=0){
-            toast.warning('Por favor seleccione un registro para diagnosticar!');
+            toast.warning('Por favor seleccione un registro!');
             return;
         }
         router.visit(route('repair_orders.show',selectedRecord));
+    };
+
+    const handleInspection=()=>{
+        if(selectedRecord.length<=0){
+            toast.warning('Por favor seleccione un registro!');
+            return;
+        }
+        router.visit(route('repair_orders.inspection',selectedRecord));
     };
 
     const handleDestroy=()=>{
@@ -83,13 +91,15 @@ const RepairOrder = ()=>{
             toast.warning('Por favor seleccione un registro para eliminar!');
             return;
         }
-        axios.delete(route('customers.destroy',selectedRecord))
+        axios.delete(route('repair_orders.destroy',selectedRecord))
         .then(response => {
-            toast.success('El Cliente se eliminó con éxito!');
+            toast.success(response.data.message);
             refreshGrid();
         })
         .catch(error => {
-            console.error('Error al obtener los datos:', error);
+            if (error.response) {
+                toast.error(error.response.data.message); // Muestra el mensaje de error si el backend lo envió
+            }
         });
     };
 
@@ -125,7 +135,7 @@ const RepairOrder = ()=>{
         <DashboardContent>
             <Head title="Ordenes de reparación" />
             <Stack
-                direction="row"
+                direction={{ xs: 'column', sm: 'row' }}
                 spacing={1}
                 sx={{
                     mb: { xs: 3, md: 2 },
@@ -173,6 +183,15 @@ const RepairOrder = ()=>{
                     onClick={handleGeneratePdf}
                 >
                     Imprimir
+                </Button>
+
+                <Button
+                    variant="contained"
+                    color="warning"
+                    startIcon={<Iconify icon="mingcute:print-fill" />}
+                    onClick={handleInspection}
+                >
+                    Inspección técnica
                 </Button>
             </Stack>
 

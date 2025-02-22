@@ -77,7 +77,7 @@ class RepairOrderStoreAction{
             $repair_order->services()->sync($services);
         }
 
-        foreach($attributes['repair_parts'] as $repair_part){
+        foreach($attributes['parts'] as $repair_part){
             $parts[$repair_part['id']] = [
                 'quantity' => $repair_part['quantity'],
             ];

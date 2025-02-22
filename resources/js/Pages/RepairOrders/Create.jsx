@@ -5,6 +5,8 @@ import Stack from '@mui/material/Stack';
 import { useState,useEffect } from 'react';
 import { Iconify } from '@/Template/Components/iconify';
 import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import CardMedia from '@mui/material/CardMedia';
 import { toast } from '@/Template/Components/snackbar';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
@@ -220,20 +222,33 @@ export default function Form() {
                                             <Stack spacing={1} direction="row" alignItems="center">
                                                 <Typography variant="h5"> Imagenes anexadas: </Typography>
                                             </Stack>
+                                            {data.id==-1?(
                                             <Filepond
                                                 vehicle={data.vehicle_id}
                                                 images={data.images}
                                                 handleSet={setImages}
                                             ></Filepond>
+                                            ):(
+                                                <Typography variant="h5"> Seleccione un vehiculo para subir sus imagenes: </Typography>
+                                            )}
                                         </Grid>
                                         <Grid xs={12} md={6} lg={6}>
                                             <Stack spacing={1} direction="row" alignItems="center">
                                                 <Typography variant="h5"> Firma: </Typography>
                                             </Stack>
-                                            <DigitalSignature onSave={handleSaveSignature} />
+                                            {data.id==-1?(
+                                                <DigitalSignature onSave={handleSaveSignature} />
+                                            ):(
+                                                <Card sx={{ maxWidth: 345 }}>
+                                                    <CardMedia
+                                                        sx={{ height: 140 }}
+                                                        image={'/storage/'+data.signature}
+                                                        title="green iguana"
+                                                    />
+                                                </Card>
+                                            )}
                                         </Grid>
                                     </Grid>
-
                                 </Box>
                                 <Stack alignItems="flex-end" sx={{ mt: 3}}>
                                     <LoadingButton color='primary' type="submit" size='normal' variant="contained" loading={processing} onClick={handleSubmit}>

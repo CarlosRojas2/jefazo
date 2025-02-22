@@ -4,7 +4,7 @@ import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import { Iconify } from '@/Template/Components/iconify';
-import Grid from '@mui/material/Unstable_Grid2';
+import Stack from '@mui/material/Stack';
 import LinearProgress from '@mui/material/LinearProgress';
 import { styled } from '@mui/material/styles';
 import IconButton from '@mui/material/IconButton';
@@ -139,31 +139,33 @@ export default function DataGridDemo({ returnSelectedRow,columns,refresh,title,p
     },[rowSelectionModel]);
     return (
         <>
-            <Grid container spacing={1} sx={{p:1}}>
+            <Stack
+                direction={{ xs: 'column', sm: 'row' }}
+                spacing={1}
+                sx={{
+                    mb: { xs: 3, md: 2 },
+                }}
+            >
+                <Typography variant="button" gutterBottom>{title}</Typography>
 
-                <Grid xs={4}>
-                    <Typography variant="button" gutterBottom>{title}</Typography>
-                </Grid>
-                <Grid xs={8}>
-                    <TextField
-                        fullWidth
-                        placeholder="Buscar..."
-                        autoFocus
-                        size='small'
-                        focused
-                        name="search"
-                        value={serverParams.search}
-                        onChange={e => setServerParams(old=>({...old,search:e.target.value}))}
-                        InputProps={{
-                            startAdornment: (
-                                <InputAdornment  position="start">
-                                    <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
-                                </InputAdornment>
-                            ),
-                        }}
-                    />
-                </Grid>
-            </Grid>
+                <TextField
+                    fullWidth
+                    placeholder="Buscar..."
+                    autoFocus
+                    size='small'
+                    focused
+                    name="search"
+                    value={serverParams.search}
+                    onChange={e => setServerParams(old=>({...old,search:e.target.value}))}
+                    InputProps={{
+                        startAdornment: (
+                            <InputAdornment  position="start">
+                                <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
+                            </InputAdornment>
+                        ),
+                    }}
+                />
+            </Stack>
             <Box sx={{
                 height: 490,
                 width: '100%'

@@ -35,4 +35,8 @@ class RepairOrder extends Model{
     public function vehicle(){
         return $this->belongsTo(Vehicle::class);
     }
+
+    public function inspections(){
+        return $this->hasMany(RepairOrderInspection::class);
+    }
 }
