@@ -62,24 +62,22 @@ export default function Form({ open,handleClose,initFormData,handleRefresh }){
         >
             <DialogTitle sx={{ minHeight: 30,height:30,py:1 }}>{title}</DialogTitle>
             <form onSubmit={handleSubmit}>
-                {/* <Scrollbar fillContent sx={{ px: 3 }}> */}
-                    <Stack spacing={3} sx={{px:3, pb:2}}>
-                        <Grid container spacing={1} sx={{pt:1}}>
-                            <Grid xs={12} md={12} lg={12}>
-                                <TextField
-                                    label="Descripción"
-                                    name="description"
-                                    value={data.description}
-                                    onChange={e => setData('description', e.target.value)}
-                                    error={errors.description?true:false}
-                                    size="small"
-                                    fullWidth
-                                    autoFocus
-                                />
-                            </Grid>
+                <Stack spacing={3} sx={{px:3, pb:2}}>
+                    <Grid container spacing={1} sx={{pt:1}}>
+                        <Grid xs={12} md={12} lg={12}>
+                            <TextField
+                                label="Descripción"
+                                name="description"
+                                value={data.description}
+                                onChange={e => setData('description', e.target.value)}
+                                error={errors.description?true:false}
+                                size="small"
+                                fullWidth
+                                autoFocus
+                            />
                         </Grid>
-                    </Stack>
-                {/* </Scrollbar> */}
+                    </Grid>
+                </Stack>
                 <DialogActions sx={{py:1,px:3}}>
                     <Button color="error" onClick={handleClose}>
                         Cancelar

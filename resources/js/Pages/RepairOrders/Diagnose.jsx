@@ -294,7 +294,6 @@ export default function Form() {
                                                     }
                                                 ]}
                                             >
-
                                                 <Typography
                                                     sx={{ flex: '1 1 100%' }}
                                                     variant="h6"
@@ -371,8 +370,26 @@ export default function Form() {
                                                 </Table>
                                             </TableContainer>
                                         </Grid>
-                                    </Grid>
 
+                                        <Grid xs={12} md={2} lg={2}>
+                                            <FormControl sx={{ minWidth: 120 }} fullWidth size="small">
+                                                <InputLabel>Estado</InputLabel>
+                                                <Select
+                                                    value={data.status}
+                                                    label="Vehiculo"
+                                                    onChange={e => setData('status', e.target.value)}
+                                                    size='small'
+                                                    error={errors.status}
+                                                >
+                                                {['INGRESADO','REVISADO'].map((status,index)=>(
+                                                    <MenuItem key={index} value={status}>
+                                                        {status}
+                                                    </MenuItem>
+                                                ))}
+                                                </Select>
+                                            </FormControl>
+                                        </Grid>
+                                    </Grid>
                                 </Box>
                                 <Stack alignItems="flex-end" sx={{ mt: 3}}>
                                     <LoadingButton color='primary' type="submit" size='normal' variant="contained" loading={processing} onClick={handleSubmit}>

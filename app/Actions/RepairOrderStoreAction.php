@@ -66,6 +66,7 @@ class RepairOrderStoreAction{
 
     public function diagnose($attributes){
         $repair_order=RepairOrder::find($attributes['id']);
+        $repair_order->status=$attributes['status'];
         if (!$repair_order) {
             return response()->json(['error' => 'Repair order not found'], 404);
         }
@@ -84,7 +85,6 @@ class RepairOrderStoreAction{
             // Sincroniza los servicios (agrega, actualiza, elimina)
             $repair_order->parts()->sync($parts);
         }
-        $repair_order->status='REVISADO';
         $repair_order->save();
     }
 }

@@ -4,6 +4,7 @@ namespace App\Actions\Pdfs;
 use App\Models\RepairOrder;
 use App\Traits\functionsTrait;
 use App\Services\CustomPdf as Pdf;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 
 class PDFR extends Pdf {
@@ -60,7 +61,6 @@ class RepairOrderPrintAction{
         $info_direccion = 'direccion';
         $info_telefonos = '937122245';
         $info_email = 'jefazo@gmail.com';
-        $info_objeto_negocio = 'GRTH YT JYTUIK Y MTUY UIKJ YTUMJN JYUT KYUI KM UYKUY IKMHTKMJ U6I KYTR UYJI IYT KUYT JHJ YY5TIJK';
 
         //END PARA MOSTRAR DATOS DE EMPRESA O SUCURSAL
 
@@ -78,7 +78,6 @@ class RepairOrderPrintAction{
         $pdf->SetTextColor(38,38,38);
         $pdf->SetFont('Arial','',6.3);
         $pdf->SetWidths(array(95));
-        $pdf->Row(array($this->decodeUtf8($info_objeto_negocio)),array("C"),'N','Y',array(0),3);
         #CUADRO DEL NRO DE FACTURA
         $pdf->SetLineWidth(0.1);
         $pdf->RoundedRect(144, 11, 58, 17, 0.5, 'B');
@@ -103,7 +102,7 @@ class RepairOrderPrintAction{
         $pdf->SetFont('Helvetica','',8.3);
         $pdf->Text(153, 36, 'FECHA : ');
         $pdf->SetFont('Helvetica','B',8.3);
-        $pdf->Text(169, 36, $order->entry_date_time);
+        $pdf->Text(169, 36, Carbon::parse($order->entry_date_time)->format('d/m/Y H:i'));
 
         #DATOS DEL CLIENTE
         $pdf->SetXY(7, 35);
@@ -172,9 +171,68 @@ class RepairOrderPrintAction{
             $pdf->Ln(1.1);
         }
         $pdf->Ln(3);
-        $pdf->SetWidths(array(20,60));
-        $pdf->Row(array($this->decodeUtf8("ASESOR : "),$this->decodeUtf8(strtok('$this->proforma->seller->nombres', " "))),array("L","L"),0,'Y',array(0),3);
+        $pdf->SetWidths(array(35,180));
+        $pdf->Row(array($this->decodeUtf8("Requerimiento del cliente : "),$this->decodeUtf8($order->problem)),array("L","L"),0,'Y',array(0),2);
         $pdf->Ln(1);
+
+        $pdf->SetWidths(array(25,180));
+        $pdf->Row(array($this->decodeUtf8("Observaciones : "),$this->decodeUtf8($order->observations)),array("L","L"),0,'Y',array(0),2);
+        $pdf->Ln(1);
+
+        // Mover el cursor a la parte inferior del PDF
+        $pdf->Ln(1);
+        $pdf->SetY(-60); // Ajusta la posición vertical según necesites
+
+        $pdf->SetWidths(array(10,180));
+        $nota="Una vez recibida la cotización, el cliente tiene un plazo de 48 horas para confirmar o no la ejecición del trabajo. De manera similar, una vez culminado el trabajo de mantenimiento y/o reparación, el cliente tendrá el mismo plazo para pagar por el servicio, y 7 días calendario para recoger su vehículo. en caso contrario, si el cliente no cumple con el plazo estipulado para el recojo, deberá pagar un monto de S/ 3.00 por día de guardianía.";
+        $pdf->Row(array($this->decodeUtf8("Nota : "),$this->decodeUtf8($nota)),array("L","L"),0,'Y',array(0),3);
+
+        // Rutas de las imágenes de las firmas
+        $firmaCliente = public_path('storage/'.$order->signature);
+        $firmaTecnico =public_path('storage/'.$order->signature);
+
+        // Agregar firma del Cliente
+        $pdf->SetX(40); // Posiciona en X
+        $pdf->Image($firmaCliente, 40, $pdf->GetY(), 50, 25); // (ruta, x, y, ancho, alto)
+        $pdf->Ln(20); // Espacio entre firma e identificación
+        $pdf->SetX(40);
+        $pdf->Cell(50, 6, 'Firma del Cliente', 0, 0, 'C'); // Texto debajo de la firma
+        // Agregar firma del Técnico
+        $pdf->SetX(140);
+        $pdf->Image($firmaTecnico, 140, $pdf->GetY() - 20, 50, 25); // Ajusta `y` si es necesario
+        $pdf->SetX(140);
+        $pdf->Cell(50, 6, $this->decodeUtf8('Firma del técnico'), 0, 0, 'C'); // Texto debajo de la firma
+
+        $pdf->AddPage();
+        $pdf->SetFont('Arial', 'B', 12);
+
+        // Título
+        $pdf->Cell(190, 10, $this->decodeUtf8('Reporte de Inspección'), 0, 1, 'C');
+        $pdf->Ln(5);
+
+        // Encabezado de tabla
+        $pdf->SetFont('Arial', 'B', 10);
+        $pdf->Cell(80, 5, 'Parte', 1);
+        $pdf->Cell(35, 5, 'Revisado Ok', 1, 0, 'C');
+        $pdf->Cell(35, 5, 'Atencion Proxima', 1, 0, 'C');
+        $pdf->Cell(35, 5, 'Atencion Inmediata', 1, 1, 'C');
+
+        // Contenido de la tabla
+        $pdf->SetFont('Arial', '', 10);
+        foreach ($order->inspections as $inspection) {
+            $status = [
+                'good' => '',
+                'needs_repair' => '',
+                'damaged' => ''
+            ];
+            $status[$inspection->status] = 'X';
+
+            $pdf->Cell(80, 5, $this->decodeUtf8($inspection->vehiclePart->description), 1);
+            $pdf->Cell(35, 5, $this->decodeUtf8($status['good']), 1, 0, 'C');
+            $pdf->Cell(35, 5, $status['needs_repair'], 1, 0, 'C');
+            $pdf->Cell(35, 5, $status['damaged'], 1, 1, 'C');
+        }
+
         $pdf->Output('name123','I');
     }
 }

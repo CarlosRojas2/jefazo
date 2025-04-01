@@ -61,7 +61,7 @@ export default function SearchDocument({label,value,path,autofocus,onChange,from
             label={label}
             type='text'
             size='small'
-            autoFocus={autofocus}
+            autoFocus
             value={value}
             onChange={handleChange}
             error={error}

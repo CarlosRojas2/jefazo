@@ -6,7 +6,7 @@ import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import React, { useState,useEffect, useMemo } from 'react';
 import { toast } from '@/Template/Components/snackbar';
-import Form from '@/Pages/Managements/Services/Form';
+// import Form from '@/Pages/Managements/Services/Form';
 import debounce from 'lodash.debounce';
 export default function PartialService({path,id,handleSet,error}){
     const [search, setSearch] = useState('');
@@ -91,27 +91,27 @@ export default function PartialService({path,id,handleSet,error}){
                             InputProps={{
                                 ...params.InputProps,
                                 type: 'search',
-                                endAdornment: (
-                                    <InputAdornment position="end">
-                                        <IconButton
-                                            edge="end"
-                                            color="primary"
-                                            onClick={handleOpenDialog}
-                                        >
-                                            <Iconify icon='octicon:feed-plus-16' />
-                                        </IconButton>
-                                    </InputAdornment>
-                                )
+                                // endAdornment: (
+                                //     <InputAdornment position="end">
+                                //         <IconButton
+                                //             edge="end"
+                                //             color="primary"
+                                //             onClick={handleOpenDialog}
+                                //         >
+                                //             <Iconify icon='octicon:feed-plus-16' />
+                                //         </IconButton>
+                                //     </InputAdornment>
+                                // )
                             }}
                         />
                     )}
                 />
             {/* </Stack> */}
-            <Form
+            {/* <Form
                 open={openDialog}
                 handleClose={handleCloseDialog}
                 initFormData={dataFormEdit}
-            />
+            /> */}
         </>
     )
 };

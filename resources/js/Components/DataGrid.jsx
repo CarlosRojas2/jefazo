@@ -153,7 +153,6 @@ export default function DataGridDemo({ returnSelectedRow,columns,refresh,title,p
                     placeholder="Buscar..."
                     autoFocus
                     size='small'
-                    focused
                     name="search"
                     value={serverParams.search}
                     onChange={e => setServerParams(old=>({...old,search:e.target.value}))}

@@ -222,7 +222,7 @@ export default function Form() {
                                             <Stack spacing={1} direction="row" alignItems="center">
                                                 <Typography variant="h5"> Imagenes anexadas: </Typography>
                                             </Stack>
-                                            {data.id==-1?(
+                                            {data.vehicle_id!==''?(
                                             <Filepond
                                                 vehicle={data.vehicle_id}
                                                 images={data.images}

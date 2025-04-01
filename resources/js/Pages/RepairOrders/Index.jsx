@@ -113,13 +113,13 @@ const RepairOrder = ()=>{
     const refreshGrid=()=>{
         setRefresh(true);
     }
-    const handleGeneratePdf = async () => {
+    const handlePrintOrder = async () => {
         if(selectedRecord.length<=0){
             toast.warning('Por favor seleccione un registro para imprimir!');
             return;
         }
         try {
-            const response = await axios.get(route('repair_orders.print',1), {
+            const response = await axios.get(route('repair_orders.print',selectedRecord), {
                 responseType: 'blob', // Necesario para manejar archivos binarios
             });
             // Crear una URL para el blob recibido
@@ -131,6 +131,7 @@ const RepairOrder = ()=>{
             console.error('Error al generar el PDF:', error);
         }
     };
+
     return (
         <DashboardContent>
             <Head title="Ordenes de reparación" />
@@ -178,20 +179,20 @@ const RepairOrder = ()=>{
 
                 <Button
                     variant="contained"
-                    color="success"
-                    startIcon={<Iconify icon="mingcute:print-fill" />}
-                    onClick={handleGeneratePdf}
+                    color="warning"
+                    startIcon={<Iconify icon="wpf:inspection" />}
+                    onClick={handleInspection}
                 >
-                    Imprimir
+                    Inspección técnica
                 </Button>
 
                 <Button
                     variant="contained"
-                    color="warning"
+                    color="success"
                     startIcon={<Iconify icon="mingcute:print-fill" />}
-                    onClick={handleInspection}
+                    onClick={handlePrintOrder}
                 >
-                    Inspección técnica
+                    Imprimir órden
                 </Button>
             </Stack>
 
