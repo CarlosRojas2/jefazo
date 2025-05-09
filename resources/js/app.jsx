@@ -19,7 +19,6 @@ createInertiaApp({
         const root = createRoot(el);
 
         root.render(
-            <StrictMode>
                 <HelmetProvider>
                     {/* <BrowserRouter> */}
                     <Suspense>
@@ -30,7 +29,6 @@ createInertiaApp({
                     </Suspense>
                     {/* </BrowserRouter> */}
                 </HelmetProvider>
-            </StrictMode>
         );
     },
     progress: {

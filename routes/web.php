@@ -41,6 +41,7 @@ Route::middleware('auth')->group(function () {
     Route::prefix('repair_orders')->name('repair_orders.')->group(function () {
         Route::get('/list', [RepairOrderController::class,'list'])->name('list');
         Route::post('/upload', [RepairOrderController::class, 'upload'])->name('upload');
+        Route::post('/revert', [RepairOrderController::class, 'revert']);
         Route::post('/diagnose', [RepairOrderController::class, 'diagnose'])->name('diagnose');
         Route::get('/inspection/{id}', [RepairOrderController::class, 'inspection'])->name('inspection');
         Route::get('/print/{id}', [RepairOrderController::class, 'print'])->name('print');

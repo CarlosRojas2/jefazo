@@ -83,7 +83,7 @@ export default function PartialCustomer({path,id,handleSet,error}){
                         <TextField
                             {...params}
                             label="Buscar clientes"
-
+                            autoFocus
                             size='small'
                             error={error}
                             InputProps={{

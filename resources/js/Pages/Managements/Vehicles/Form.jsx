@@ -92,7 +92,6 @@ export default function Form({ open,handleClose,initFormData,handleRefresh }){
                                     error={errors.brand?true:false}
                                     size="small"
                                     fullWidth
-                                    autoFocus
                                 />
                             </Grid>
                             <Grid xs={12} md={12} lg={12}>
@@ -104,7 +103,6 @@ export default function Form({ open,handleClose,initFormData,handleRefresh }){
                                     error={errors.model?true:false}
                                     size="small"
                                     fullWidth
-                                    autoFocus
                                 />
                             </Grid>
                             <Grid xs={12} md={12} lg={12}>
@@ -116,7 +114,6 @@ export default function Form({ open,handleClose,initFormData,handleRefresh }){
                                     error={errors.plate?true:false}
                                     size="small"
                                     fullWidth
-                                    autoFocus
                                 />
                             </Grid>
                             <Grid xs={12} md={12} lg={12}>
@@ -128,7 +125,6 @@ export default function Form({ open,handleClose,initFormData,handleRefresh }){
                                     error={errors.color?true:false}
                                     size="small"
                                     fullWidth
-                                    autoFocus
                                 />
                             </Grid>
                         </Grid>

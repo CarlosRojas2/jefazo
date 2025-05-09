@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 use App\Actions\Pdfs\RepairOrderPrintAction;
 use App\Actions\RepairOrderStoreAction;
+use App\Models\Image;
 use App\Models\RepairOrder;
 use App\Models\RepairOrderInspection;
 use App\Models\Vehicle;
@@ -29,6 +30,15 @@ class RepairOrderController extends Controller{
     }
 
     public function store(Request $request,RepairOrderStoreAction $store){
+        // Validación
+        $request->validate([
+            'customer_id' => [
+                'required',
+                'numeric'
+            ],
+            'vehicle_id' => 'required|numeric',
+            'problem' => 'required|string',
+        ]);
         return DB::transaction(function() use ($request,$store){
             $store->execute($request->all());
             return redirect()->route("repair_orders.index");
@@ -53,32 +63,47 @@ class RepairOrderController extends Controller{
         return response()->json($result);
     }
 
+
     public function upload(Request $request){
-        // Validar que se suban solo imágenes
         $request->validate([
-            'vehicle'=>'required',
-            'images' => 'required|array',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:10240', // Limitar tamaño a 2MB
+            'vehicle' => 'required',
+            'images' => 'required|image|mimes:jpeg,png,jpg,gif|max:10240',
         ]);
-        // Guardar las imágenes
-        $images = [];
-        $vehicle=Vehicle::find($request->vehicle);
-        $directory=$vehicle->plate;
-        foreach ($request->file('images') as $image) {
-            $imageName = time() . '_' . $image->getClientOriginalName();
-            // Guardar las imágenes en el disco 'public/ordenes'
-            $path = $image->storeAs('annexes/' . $directory, $imageName);
 
-            // Obtener la URL pública
-            $url = Storage::url($path);
+        $vehicle = Vehicle::findOrFail($request->vehicle);
+        $directory = $vehicle->plate;
+        $image = $request->file('images');
+        $imageName = time() . '_' . $image->getClientOriginalName();
+        $path = $image->storeAs('annexes/' . $directory, $imageName);
 
-            // Extraer solo la ruta relativa eliminando el dominio y el prefijo '/storage/'
-            $relativePath = str_replace('http://localhost/storage/', '', $url);
+        return $path; // ← devuelve solo 1 string, no array
+    }
 
-            // Agregar la ruta relativa al array de imágenes
-            $images[] = $relativePath;
+    public function revert(Request $request){
+        $request->validate([
+            'path' => 'required|string',
+        ]);
+        $path = $request->input('path');
+        // Asegúrate de eliminar el archivo del disco
+        if (Storage::disk('public')->exists($path)) {
+            Storage::disk('public')->delete($path);
         }
-        return $images;
+        // Elimina o manda a papelera el registro si ya está en la BD
+        $image = Image::where('path', $path)->first();
+        if ($image) {
+            $image->delete(); // Soft delete si tu modelo usa SoftDeletes
+        }
+
+        return response()->json(['message' => 'Imagen eliminada']);
+    }
+
+    public function deleteImage(Request $request){
+        $request->validate([
+            'filename' => 'required|string',
+        ]);
+        $path = 'annexes/' . $request->filename;
+        Storage::disk('public')->delete($path);
+        return response()->json(['status' => 'ok']);
     }
 
     public function show($id){

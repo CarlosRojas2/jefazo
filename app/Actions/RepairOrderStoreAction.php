@@ -43,10 +43,9 @@ class RepairOrderStoreAction{
         // Restaurar o crear solo las imágenes que vienen en el array de imágenes
         foreach ($images as $image) {
             $obj_image = Image::withTrashed()
-                ->where('repair_order_id', $repair_order->id)
-                ->where('path', $image)
-                ->first();
-
+            ->where('repair_order_id', $repair_order->id)
+            ->where('path', $image)
+            ->first();
             if ($obj_image) {
                 // Si la imagen existe en "papelera", restaurarla
                 $obj_image->restore();

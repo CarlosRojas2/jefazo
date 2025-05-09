@@ -87,10 +87,14 @@ export default function Form() {
         router.visit(route('repair_orders.index'));
     }
 
-    const setImages=(images)=>{
-        if(images){
-            setData(old=>({...old,images:images}));
-        }
+    const setImages = (newImagePath) => {
+        setData(old => {
+            const currentImages = old.images || [];
+            return {
+                ...old,
+                images: [...currentImages, newImagePath],
+            };
+        });
     };
 
     const handleSaveSignature = (signatureData) => {
@@ -196,7 +200,6 @@ export default function Form() {
                                                 fullWidth
                                                 multiline
                                                 maxRows={4}
-                                                autoFocus
                                             />
                                         </Grid>
                                     </Grid>

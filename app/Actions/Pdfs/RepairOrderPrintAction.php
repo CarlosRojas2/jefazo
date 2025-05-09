@@ -233,6 +233,55 @@ class RepairOrderPrintAction{
             $pdf->Cell(35, 5, $status['damaged'], 1, 1, 'C');
         }
 
+        // Agregar una nueva página para los anexos
+        $pdf->AddPage();
+        $pdf->SetFont('Arial', 'B', 10);
+        $pdf->Cell(180, 6, $this->decodeUtf8('Anexos de la orden de reparación'), 0, 1, 'C', false);
+        $pdf->Ln(3);
+
+        $yPos = 50; // Posición inicial en la página
+        foreach ($order->images as $image) {
+            $picture = public_path('storage/' . $image->path);
+
+            if (file_exists($picture) && is_file($picture) && is_readable($picture)) {
+                // Obtener las dimensiones de la imagen
+                list($originalWidth, $originalHeight) = getimagesize($picture);
+
+                // Calcular la relación de aspecto para ajustar la imagen sin deformarla
+                $aspectRatio = $originalWidth / $originalHeight;
+
+                // Definir el tamaño máximo para la imagen
+                $maxWidth = 190;  // Ancho máximo permitido
+                $maxHeight = 100; // Altura máxima permitida
+
+                // Ajustar el tamaño de la imagen según su relación de aspecto
+                if ($originalWidth > $originalHeight) {
+                    // Si la imagen es más ancha que alta, ajustar el ancho
+                    $newWidth = $maxWidth;
+                    $newHeight = $maxWidth / $aspectRatio;
+                } else {
+                    // Si la imagen es más alta que ancha, ajustar la altura
+                    $newHeight = $maxHeight;
+                    $newWidth = $maxHeight * $aspectRatio;
+                }
+
+                // Verificar si la imagen cabe en la página
+                if ($yPos + $newHeight > 250) {
+                    // Si no cabe, agregar una nueva página
+                    $pdf->AddPage();
+                    $yPos = 50; // Reiniciar la posición Y para la nueva página
+                }
+
+                // Colocar la imagen en la página
+                $pdf->Image($picture, 10, $yPos, $newWidth, $newHeight);
+
+                // Agregar un borde alrededor de la imagen
+                $pdf->Rect(10, $yPos, $newWidth, $newHeight);
+
+                // Actualizar la posición Y para la siguiente imagen
+                $yPos += $newHeight + 10; // Espacio entre imágenes
+            }
+        }
         $pdf->Output('name123','I');
     }
 }

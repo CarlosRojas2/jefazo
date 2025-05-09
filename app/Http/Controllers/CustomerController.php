@@ -6,6 +6,7 @@ use App\Models\RepairOrder;
 use App\Models\Vehicle;
 use App\Services\DataTable;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class CustomerController extends Controller{
@@ -14,28 +15,40 @@ class CustomerController extends Controller{
     }
 
     public function store(Request $request){
-        // Validación de datos
-        $request->validate([
-            'dni' => 'required|string|unique:customers,dni,NULL,id,deleted_at,NULL',
-            'full_names' => 'required|string',
-        ]);
-        // Buscar cliente por DNI, incluso si está eliminado
-        $customer = Customer::withTrashed()->where('dni', $request->dni)->first();
-        if ($customer) {
-            // Si el cliente estaba eliminado, lo restauramos
-            if ($customer->trashed()) {
-                $customer->restore();
-            }
-            return redirect()->route("customers.index");
+        $customer = null;
+        // Si viene un ID, estamos editando
+        if ($request->filled('id')) {
+            $customer = Customer::withTrashed()->find($request->id);
         }
-        $customer=Customer::find($request->id);
-        if(is_null($customer)){
+
+        // Validación
+        $request->validate([
+            'dni' => [
+                'required',
+                'string',
+                Rule::unique('customers')->ignore(optional($customer)->id)->whereNull('deleted_at'),
+            ],
+            'full_names' => 'required|string',
+            'phone'=>'required|numeric',
+            'address'=>'required|string'
+        ]);
+
+        // Restaurar si fue eliminado
+        if ($customer && $customer->trashed()) {
+            $customer->restore();
+        }
+
+        // Crear si no existe
+        if (!$customer) {
             $customer = new Customer();
         }
-        $customer->fill(request()->all());
+
+        $customer->fill($request->all());
         $customer->save();
+
         return redirect()->route("customers.index");
     }
+
 
     public function show(Customer $customer){
         return response()->json($customer);
