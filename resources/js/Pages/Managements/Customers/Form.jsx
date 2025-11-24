@@ -7,7 +7,7 @@ import LoadingButton from '@mui/lab/LoadingButton';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import { useForm  } from '@inertiajs/react';
-import { useMemo,useState } from 'react';
+import { useEffect,useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import SearchDocument from '@/Components/SearchDocument';
 import Grid from '@mui/material/Unstable_Grid2';
@@ -15,22 +15,32 @@ import Grid from '@mui/material/Unstable_Grid2';
 export default function Form({ open,handleClose,initFormData,handleRefresh }){
     const theme = useTheme();
     const [title,setTitle]=useState('Registrar Clientes');
-    const { reset, data, setData, post, processing, errors } = useForm({
+    const { reset, data, setData, post, processing, errors,clearErrors } = useForm({
         id:-1,
         full_names: '',
         dni:'',
         phone:'',
         address:''
     });
-    useMemo(()=>{
-        if(initFormData!==null){
-            setData(initFormData);
-            setTitle('Editar Cliente');
-        }else{
-            reset();
-            setTitle('Registrar Cliente');
+    useEffect(() => {
+        if (open) {
+            if (initFormData !== null) {
+                setData(initFormData);
+                setTitle('Editar Cliente');
+            } else {
+                reset();
+                setTitle('Registrar Cliente');
+            }
+            clearErrors(); // Limpiar errores al abrir
         }
-    },[initFormData]);
+    }, [open, initFormData]);
+
+    // Limpiar formulario al cerrar
+    const handleModalClose = () => {
+        reset();
+        clearErrors();
+        handleClose();
+    };
 
     function handleSubmit(e) {
         e.preventDefault()
@@ -57,7 +67,7 @@ export default function Form({ open,handleClose,initFormData,handleRefresh }){
             fullWidth
             maxWidth="sm"
             open={open}
-            onClose={handleClose}
+            onClose={handleModalClose}
             transitionDuration={{
                 enter: theme.transitions.duration.shortest,
                 exit: theme.transitions.duration.shortest - 80,
@@ -130,7 +140,7 @@ export default function Form({ open,handleClose,initFormData,handleRefresh }){
                     </Stack>
                 {/* </Scrollbar> */}
                 <DialogActions sx={{py:1,px:3}}>
-                    <Button color="error" onClick={handleClose}>
+                    <Button color="error" onClick={handleModalClose}>
                         Cancelar
                     </Button>
                     <LoadingButton

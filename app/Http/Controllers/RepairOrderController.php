@@ -74,7 +74,7 @@ class RepairOrderController extends Controller{
         $directory = $vehicle->plate;
         $image = $request->file('images');
         $imageName = time() . '_' . $image->getClientOriginalName();
-        $path = $image->storeAs('annexes/' . $directory, $imageName);
+        $path = $image->storeAs('annexes/' . $directory, $imageName,'public');
 
         return $path; // ← devuelve solo 1 string, no array
     }

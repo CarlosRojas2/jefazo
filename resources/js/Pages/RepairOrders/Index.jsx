@@ -91,6 +91,11 @@ const RepairOrder = ()=>{
             toast.warning('Por favor seleccione un registro para eliminar!');
             return;
         }
+
+        if (!confirm('¿Estás seguro de eliminar?')) {
+            return;
+        }
+        
         axios.delete(route('repair_orders.destroy',selectedRecord))
         .then(response => {
             toast.success(response.data.message);

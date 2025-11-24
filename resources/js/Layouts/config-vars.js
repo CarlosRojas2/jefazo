@@ -2,7 +2,7 @@ import { varAlpha } from '@/Theme/styles';
 // ----------------------------------------------------------------------
 export const baseVars = (theme) => ({
     // nav
-    '--layout-nav-bg': theme.vars.palette.common.white,
+    '--layout-nav-bg': theme.vars.palette.common.black,
     '--layout-nav-border-color': varAlpha(theme.vars.palette.grey['500Channel'], 0.08),
     '--layout-nav-zIndex': 1000,
     '--layout-nav-mobile-width': '320px',

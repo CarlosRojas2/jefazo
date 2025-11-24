@@ -9,6 +9,7 @@ import LinearProgress from '@mui/material/LinearProgress';
 import { styled } from '@mui/material/styles';
 import IconButton from '@mui/material/IconButton';
 import { useState,useEffect,useMemo } from 'react';
+
 const StyledGridOverlay = styled('div')
     (({ theme }) => ({
         display: 'flex',
@@ -142,23 +143,29 @@ export default function DataGridDemo({ returnSelectedRow,columns,refresh,title,p
             <Stack
                 direction={{ xs: 'column', sm: 'row' }}
                 spacing={1}
+                alignItems={{ xs: 'stretch', sm: 'center' }}
+                justifyContent="space-between"
                 sx={{
                     mb: { xs: 3, md: 2 },
                 }}
             >
-                <Typography variant="button" gutterBottom>{title}</Typography>
+                <Typography variant="button" gutterBottom>
+                    {title}
+                </Typography>
 
                 <TextField
-                    fullWidth
                     placeholder="Buscar..."
                     autoFocus
                     size='small'
                     name="search"
                     value={serverParams.search}
                     onChange={e => setServerParams(old=>({...old,search:e.target.value}))}
+                    sx={{
+                        width: { xs: '100%', sm: '300px', md: '250px' }
+                    }}
                     InputProps={{
                         startAdornment: (
-                            <InputAdornment  position="start">
+                            <InputAdornment position="start">
                                 <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
                             </InputAdornment>
                         ),
@@ -207,8 +214,8 @@ export default function DataGridDemo({ returnSelectedRow,columns,refresh,title,p
                         '.MuiDataGrid-columnHeaderTitle': {
                             fontWeight: 'bold !important',
                         },
-                        "& .status-registered": { color: 'error.main' }, // Rojo claro con rojo oscuro
-                        "& .status-diagnosed": { color: "success.main" }, // Verde claro con verde oscuro
+                        "& .status-registered": { color: 'error.main' },
+                        "& .status-diagnosed": { color: "success.main" },
                     }}
                     onRowDoubleClick={dblClick}
                     // localeText={esES.components.MuiDataGrid.defaultProps.localeText}

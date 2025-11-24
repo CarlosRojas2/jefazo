@@ -7,14 +7,14 @@ import LoadingButton from '@mui/lab/LoadingButton';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import { useForm  } from '@inertiajs/react';
-import { useMemo,useState } from 'react';
+import { useEffect, useMemo,useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import Grid from '@mui/material/Unstable_Grid2';
 import PartialCustomer  from '@/Pages/Partials/PartialCustomer';
 export default function Form({ open,handleClose,initFormData,handleRefresh }){
     const theme = useTheme();
     const [title,setTitle]=useState('Registrar Vehículo');
-    const { reset, data, setData, post, processing, errors } = useForm({
+    const { reset, data, setData, post, processing, errors,clearErrors } = useForm({
         id:-1,
         customer_id:'',
         brand:'',
@@ -22,15 +22,27 @@ export default function Form({ open,handleClose,initFormData,handleRefresh }){
         plate:'',
         color:''
     });
-    useMemo(()=>{
-        if(initFormData!==null){
-            setData(initFormData);
-            setTitle('Editar Vehículo');
-        }else{
-            reset();
-            setTitle('Registrar Vehículo');
+
+    useEffect(() => {
+        if (open) {
+            if (initFormData !== null) {
+                setData(initFormData);
+                setTitle('Editar vehículo');
+                console.log('initFormData',initFormData.customer_id);
+            } else {
+                reset();
+                setTitle('Registrar vehículo');
+            }
+            clearErrors(); // Limpiar errores al abrir
         }
-    },[initFormData]);
+    }, [open, initFormData]);
+
+    // Limpiar formulario al cerrar
+    const handleModalClose = () => {
+        reset();
+        clearErrors();
+        handleClose();
+    };
 
     const setCustomer = (customer_id)=>{
         console.log('customer_id',customer_id)
@@ -54,7 +66,7 @@ export default function Form({ open,handleClose,initFormData,handleRefresh }){
             fullWidth
             maxWidth="sm"
             open={open}
-            onClose={handleClose}
+            onClose={handleModalClose}
             transitionDuration={{
                 enter: theme.transitions.duration.shortest,
                 exit: theme.transitions.duration.shortest - 80,
@@ -77,7 +89,7 @@ export default function Form({ open,handleClose,initFormData,handleRefresh }){
                             <Grid xs={12} md={12} lg={12}>
                                 <PartialCustomer
                                     path='customers.search'
-                                    id={data.id!=-1?data.customer_id:null}
+                                    id={initFormData?initFormData.customer_id:null}
                                     handleSet={setCustomer}
                                     error={errors.customer_id}
                                 >
@@ -131,7 +143,7 @@ export default function Form({ open,handleClose,initFormData,handleRefresh }){
                     </Stack>
                 {/* </Scrollbar> */}
                 <DialogActions sx={{py:1,px:3}}>
-                    <Button color="error" onClick={handleClose}>
+                    <Button color="error" onClick={handleModalClose}>
                         Cancelar
                     </Button>
                     <LoadingButton
