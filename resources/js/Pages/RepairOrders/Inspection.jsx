@@ -1,103 +1,66 @@
-import { Head,useForm,usePage,router } from '@inertiajs/react';
-import { DashboardLayout,DashboardContent } from '@/Layouts/dashboard';
+import { Head, useForm, usePage, router } from '@inertiajs/react';
+import { DashboardLayout, DashboardContent } from '@/Layouts/dashboard';
 import Stack from '@mui/material/Stack';
-import { useState,useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Iconify } from '@/Template/Components/iconify';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Radio, Button,Typography } from "@mui/material";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Radio, Button, Typography } from "@mui/material";
 import Card from '@mui/material/Card';
 import { toast } from '@/Template/Components/snackbar';
 import IconButton from '@mui/material/IconButton';
 import Grid from '@mui/material/Unstable_Grid2';
 import Box from '@mui/material/Box';
 import { setFormData } from '@/Utils/functions';
+
 export default function Inspection() {
     const { data, setData, post, processing, errors } = useForm({
-        repair_order_id:-1,
-        inspections:[]
+        repair_order_id: -1,
+        inspections: []
     });
     const { repair_order } = usePage().props;
-    const [title,setTitle]=useState('');
-    const vehicleParts = [
-        { id: 1, name: "Motor" },
-        { id: 2, name: "Frenos" },
-        { id: 3, name: "Luces" },
-        { id: 4, name: "Batería" },
-        { id: 1, name: "Motor" },
-        { id: 2, name: "Frenos" },
-        { id: 3, name: "Luces" },
-        { id: 4, name: "Batería" },
-        { id: 1, name: "Motor" },
-        { id: 2, name: "Frenos" },
-        { id: 3, name: "Luces" },
-        { id: 4, name: "Batería" },
-        { id: 1, name: "Motor" },
-        { id: 2, name: "Frenos" },
-        { id: 3, name: "Luces" },
-        { id: 4, name: "Batería" },
-        { id: 1, name: "Motor" },
-        { id: 2, name: "Frenos" },
-        { id: 3, name: "Luces" },
-        { id: 4, name: "Batería" },
-        { id: 1, name: "Motor" },
-        { id: 2, name: "Frenos" },
-        { id: 3, name: "Luces" },
-        { id: 4, name: "Batería" },
-        { id: 1, name: "Motor" },
-        { id: 2, name: "Frenos" },
-        { id: 3, name: "Luces" },
-        { id: 4, name: "Batería" },
-        { id: 1, name: "Motor" },
-        { id: 2, name: "Frenos" },
-        { id: 3, name: "Luces" },
-        { id: 4, name: "Batería" },
-        { id: 2, name: "Frenos" },
-        { id: 3, name: "Luces" },
-        { id: 4, name: "Batería" },
-        { id: 1, name: "Motor" },
-        { id: 2, name: "Frenos" },
-        { id: 3, name: "Luces" },
-        { id: 4, name: "Batería" },
-    ];
+    const [title, setTitle] = useState('');
+    
     useEffect(() => {
         if (repair_order !== undefined) {
             setForm();
-            setTitle('Inspección - '+ repair_order.correlative);
+            setTitle('Inspección - ' + repair_order.correlative);
         }
     }, [repair_order]);
-    const setForm = ()=>{
-        let inspections =[];
-        repair_order.inspections.forEach((inspection)=>{
+
+    const setForm = () => {
+        let inspections = [];
+        repair_order.inspections.forEach((inspection) => {
             inspections.push({
-                id:inspection.id,
-                repair_order_id:inspection.repair_order_id,
-                name:inspection.vehicle_part.description,
-                vehicle_part_id:inspection.vehicle_part_id,
-                status:inspection.status,
-                observations:inspection.observations
+                id: inspection.id,
+                repair_order_id: inspection.repair_order_id,
+                name: inspection.vehicle_part.description,
+                vehicle_part_id: inspection.vehicle_part_id,
+                status: inspection.status,
+                observations: inspection.observations
             });
         });
-        setData(old=>({...old,inspections:inspections,repair_order_id:repair_order.id}));
+        setData(old => ({ ...old, inspections: inspections, repair_order_id: repair_order.id }));
     }
+
     function handleSubmit(event) {
         event.preventDefault()
-        post(route('repair_orders.diagnose'),{
-            onSuccess:()=>{
+        post(route('repair_orders.diagnose'), {
+            onSuccess: () => {
                 toast.success('Datos guardados con éxito!');
             }
         })
     }
 
-    const handleGenerate=(event)=>{
+    const handleGenerate = (event) => {
         event.preventDefault();
-        post(route('repair_orders.generate.inspection'),{
-            preserveScroll:true,
-            onSuccess:()=>{
+        post(route('repair_orders.generate.inspection'), {
+            preserveScroll: true,
+            onSuccess: () => {
                 toast.success('ok!');
             }
         })
     };
 
-    const handleBack = ()=>{
+    const handleBack = () => {
         router.visit(route('repair_orders.index'));
     }
 
@@ -114,22 +77,37 @@ export default function Inspection() {
         <DashboardLayout>
             <Head title='Inspección'></Head>
             <DashboardContent>
-                <Stack
-                    spacing={1.5}
-                    direction="row"
-                    sx={{pb:2}}
-                    alignItems="flex-start"
+                {/* HEADER FIJO */}
+                <Box
+                    sx={{
+                        position: 'sticky',
+                        top: 0,
+                        zIndex: 1100,
+                        backgroundColor: 'background.paper',
+                        borderBottom: 1,
+                        borderColor: 'divider',
+                        pb: 2,
+                        pt: 1,
+                        mb: 2
+                    }}
                 >
-                    <IconButton onClick={handleBack}>
-                        <Iconify icon="eva:arrow-ios-back-fill" />
-                    </IconButton>
-                    <Stack spacing={0.5}>
-                        <Stack spacing={1} direction="row" alignItems="center">
-                            <Typography variant="h4"> {title} </Typography>
+                    <Stack
+                        spacing={1.5}
+                        direction="row"
+                        alignItems="flex-start"
+                    >
+                        <IconButton onClick={handleBack}>
+                            <Iconify icon="eva:arrow-ios-back-fill" />
+                        </IconButton>
+                        <Stack spacing={0.5}>
+                            <Stack spacing={1} direction="row" alignItems="center">
+                                <Typography variant="h4"> {title} </Typography>
+                            </Stack>
                         </Stack>
                     </Stack>
-                </Stack>
+                </Box>
 
+                {/* CONTENIDO CON SCROLL */}
                 <Grid container spacing={1}>
                     <Grid xs={12} md={12}>
                         <Card sx={{ p: 2 }}>
@@ -142,24 +120,74 @@ export default function Inspection() {
                                         sm: 'repeat(2, 1fr)',
                                     }}
                                 >
-                                    <Grid container spacing={1} sx={{pt:0}}>
+                                    <Grid container spacing={1} sx={{ pt: 0 }}>
                                         <Grid xs={12} md={12} lg={12}>
-                                            <TableContainer component={Paper} sx={{ maxWidth: 1000, mt: 1 }}>
-                                                <Table size="small">
+                                            <TableContainer 
+                                                component={Paper} 
+                                                sx={{ 
+                                                    maxWidth: 1000, 
+                                                    mt: 1,
+                                                    // Altura máxima para permitir scroll interno si hay muchos items
+                                                    maxHeight: 'calc(100vh - 280px)',
+                                                    overflow: 'auto'
+                                                }}
+                                            >
+                                                <Table size="small" stickyHeader>
                                                     <TableHead>
                                                         <TableRow>
-                                                            <TableCell sx={{ padding: "2px 4px", fontSize: "12px" }}><b>Parte</b></TableCell>
-                                                            <TableCell align="center" sx={{ padding: "2px 4px", fontSize: "12px" }}>Revisado Ok</TableCell>
-                                                            <TableCell align="center" sx={{ padding: "2px 4px", fontSize: "12px" }}>Atención próxima</TableCell>
-                                                            <TableCell align="center" sx={{ padding: "2px 4px", fontSize: "12px" }}>Atención inmediata</TableCell>
+                                                            <TableCell 
+                                                                sx={{ 
+                                                                    padding: "8px 12px", 
+                                                                    fontSize: "13px",
+                                                                    fontWeight: 'bold',
+                                                                    backgroundColor: 'background.paper'
+                                                                }}
+                                                            >
+                                                                Parte
+                                                            </TableCell>
+                                                            <TableCell 
+                                                                align="center" 
+                                                                sx={{ 
+                                                                    padding: "8px 12px", 
+                                                                    fontSize: "13px",
+                                                                    fontWeight: 'bold',
+                                                                    backgroundColor: 'background.paper'
+                                                                }}
+                                                            >
+                                                                Revisado Ok
+                                                            </TableCell>
+                                                            <TableCell 
+                                                                align="center" 
+                                                                sx={{ 
+                                                                    padding: "8px 12px", 
+                                                                    fontSize: "13px",
+                                                                    fontWeight: 'bold',
+                                                                    backgroundColor: 'background.paper'
+                                                                }}
+                                                            >
+                                                                Atención próxima
+                                                            </TableCell>
+                                                            <TableCell 
+                                                                align="center" 
+                                                                sx={{ 
+                                                                    padding: "8px 12px", 
+                                                                    fontSize: "13px",
+                                                                    fontWeight: 'bold',
+                                                                    backgroundColor: 'background.paper'
+                                                                }}
+                                                            >
+                                                                Atención inmediata
+                                                            </TableCell>
                                                         </TableRow>
                                                     </TableHead>
                                                     <TableBody>
                                                         {data.inspections.map(({ id, name, status }) => (
                                                             <TableRow key={id}>
-                                                                <TableCell sx={{ padding: "2px 4px", fontSize: "12px" }}>{name}</TableCell>
+                                                                <TableCell sx={{ padding: "8px 12px", fontSize: "13px" }}>
+                                                                    {name}
+                                                                </TableCell>
                                                                 {["good", "needs_repair", "damaged"].map((option) => (
-                                                                    <TableCell key={option} align="center" sx={{ padding: "2px 4px" }}>
+                                                                    <TableCell key={option} align="center" sx={{ padding: "8px 12px" }}>
                                                                         <Radio
                                                                             color={option === "good" ? "success" : option === "needs_repair" ? "warning" : "error"}
                                                                             checked={status === option}
@@ -171,14 +199,6 @@ export default function Inspection() {
                                                         ))}
                                                     </TableBody>
                                                 </Table>
-                                                <Button
-                                                    variant="contained"
-                                                    color="primary"
-                                                    sx={{ mt: 1, width: "100%", py: 0.5, fontSize: "12px" }}
-                                                    onClick={handleGenerate}
-                                                >
-                                                    Actualizar inspección
-                                                </Button>
                                             </TableContainer>
                                         </Grid>
                                     </Grid>
@@ -187,6 +207,50 @@ export default function Inspection() {
                         </Card>
                     </Grid>
                 </Grid>
+
+                {/* FOOTER FIJO */}
+                <Box
+                    sx={{
+                        position: 'sticky',
+                        bottom: 0,
+                        zIndex: 1100,
+                        backgroundColor: 'background.paper',
+                        borderTop: 1,
+                        borderColor: 'divider',
+                        pt: 2,
+                        pb: 2,
+                        mt: 1
+                    }}
+                >
+                    <Stack direction="row" spacing={2} justifyContent="flex-end">
+                        <Button
+                            variant="outlined"
+                            color="inherit"
+                            onClick={handleBack}
+                            sx={{ minWidth: 120 }}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={handleGenerate}
+                            disabled={processing}
+                            sx={{ minWidth: 200 }}
+                        >
+                            Actualizar inspección
+                        </Button>
+                        <Button
+                            variant="contained"
+                            color="success"
+                            onClick={handleSubmit}
+                            disabled={processing}
+                            sx={{ minWidth: 120 }}
+                        >
+                            Guardar
+                        </Button>
+                    </Stack>
+                </Box>
             </DashboardContent>
         </DashboardLayout>
     );

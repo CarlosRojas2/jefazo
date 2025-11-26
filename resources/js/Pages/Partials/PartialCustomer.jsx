@@ -3,11 +3,12 @@ import Autocomplete from '@mui/material/Autocomplete';
 import Stack from '@mui/material/Stack';
 import {Iconify} from '@/Template/Components/iconify';
 import IconButton from '@mui/material/IconButton';
-import InputAdornment from '@mui/material/InputAdornment';
-import React, { useState,useEffect, useMemo } from 'react';
+import { useState,useEffect, useMemo } from 'react';
 import { toast } from '@/Template/Components/snackbar';
-// import Form from '@/Pages/Managements/Customers/Form';
+import Form from '@/Pages/Managements/Customers/Form';
 import debounce from 'lodash.debounce';
+import api from '@/lib/axios';
+
 export default function PartialCustomer({path,id,handleSet,error}){
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(false);
@@ -15,17 +16,29 @@ export default function PartialCustomer({path,id,handleSet,error}){
     const [items, setItems] = useState([]);
     const [openDialog, setOpenDialog] = useState(false);
     const [dataFormEdit, setDataFormEdit] = useState(null);
-    const handleOpenDialog = () => {
+
+    const handleOpenNewCustomer = () => {
         setOpenDialog(true);
     };
+
+    const handleOpenEditCustomer = () => {
+        if(!selectedValue){
+            toast.warning('Por favor seleccione un cliente para editar!');
+            return;
+        }
+        console.log('sele',selectedValue);
+        setDataFormEdit(selectedValue);
+        setOpenDialog(true);
+    };
+
     const handleCloseDialog = () => {
         setOpenDialog(false);
-
         setDataFormEdit(null);
     };
+
     const fetchOptions = (input)=>{
         setLoading(true);
-        axios.get(route(path,{'search':input}))
+        api.get(route(path,{'search':input}))
         .then(response => {
             setItems(response.data);
         })
@@ -34,12 +47,36 @@ export default function PartialCustomer({path,id,handleSet,error}){
         })
         .finally(()=>{
             setLoading(false);
-        })
+            setDataFormEdit({
+                description: input.toUpperCase()
+            });
+        });
     }
+
+    // Función para manejar el nuevo cliente
+    const handleAddCustomer = (newCustomer) => {
+        // Agregar el nuevo cliente a la lista
+        setItems((prevItems) => {
+            // Verificar si ya existe para evitar duplicados
+            const exists = prevItems.some(item => item.id === newCustomer.id);
+            if (exists) {
+                return prevItems;
+            }
+            return [...prevItems, newCustomer];
+        });
+
+        // Seleccionar automáticamente el nuevo cliente
+        setSelectedValue(newCustomer);
+
+        // Limpiar el search para que muestre el valor seleccionado
+        setSearch('');
+    };
+
     const debouncedFetchOptions = useMemo(() => debounce(fetchOptions, 500), []);
+
     useEffect(()=>{
         if(selectedValue){
-            if(selectedValue.full_names==search || search==''){
+            if(selectedValue.description==search || search==''){
                 return;
             }
         }
@@ -54,25 +91,32 @@ export default function PartialCustomer({path,id,handleSet,error}){
         }
     },[selectedValue]);
 
-    // Efecto para cargar al editar
+    // Efecto para cargar al editar el vehículo o la orden de reparacion
     useEffect(() => {
         if(id)
-        axios.get(route(path,{'id':id}))
+        api.get(route(path,{'id':id}))
         .then((response)=>{
             setSelectedValue(response.data[0]);
         });
     }, [id]);
+
     return(
         <>
-            {/* <Stack spacing={2} sx={{ width: 543 }} > */}
+            <Stack direction="row" spacing={1} alignItems="center" sx={{ width: 1000 }}>
                 <Autocomplete
                     freeSolo
                     options={items}
                     value={selectedValue}
                     fullWidth
+                    loading={loading}
+                    loadingText="Cargando..."
+                    noOptionsText={search ? "No hay resultados" : "Escribe para buscar"}
+                    clearOnEscape
                     inputValue={search}
                     onInputChange={(event, newInputValue) => {
-                        setSearch(newInputValue);
+                        // if (!selectedValue) {
+                            setSearch(newInputValue);
+                        // }
                     }}
                     onChange={(event, newValue) => {
                         setSelectedValue(newValue);
@@ -82,34 +126,48 @@ export default function PartialCustomer({path,id,handleSet,error}){
                     renderInput={(params) => (
                         <TextField
                             {...params}
-                            label="Buscar clientes"
-                            autoFocus
+                            label="Buscar Cliente"
+                            fullWidth
                             size='small'
                             error={error}
-                            InputProps={{
-                                ...params.InputProps,
-                                type: 'search',
-                                // endAdornment: (
-                                //     <InputAdornment position="end">
-                                //         <IconButton
-                                //             edge="end"
-                                //             color="primary"
-                                //             onClick={handleOpenDialog}
-                                //         >
-                                //             <Iconify icon='octicon:feed-plus-16' />
-                                //         </IconButton>
-                                //     </InputAdornment>
-                                // )
+                            inputProps={{
+                                ...params.inputProps,
+                                readOnly: selectedValue
+                            }}
+                            sx={{
+                                input: {
+                                    textTransform: 'uppercase',
+                                }
                             }}
                         />
                     )}
                 />
-            {/* </Stack> */}
-            {/* <Form
+            </Stack>
+
+            {!selectedValue &&(
+                <IconButton
+                    color="primary"
+                    onClick={handleOpenNewCustomer}
+                >
+                    <Iconify width="25" height="25" icon='solar:widget-add-bold-duotone'/>
+                </IconButton>
+            )}
+
+            {selectedValue &&(
+                <IconButton
+                    color="warning"
+                    onClick={handleOpenEditCustomer}
+                >
+                    <Iconify width="25" height="25" icon='hugeicons:dashboard-square-edit' />
+                </IconButton>
+            )}
+
+            <Form
                 open={openDialog}
                 handleClose={handleCloseDialog}
                 initFormData={dataFormEdit}
-            /> */}
+                handleRefresh={handleAddCustomer}
+            />
         </>
     )
 };

@@ -6,53 +6,82 @@ import Button from '@mui/material/Button';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
-import { useForm  } from '@inertiajs/react';
+import { usePage  } from '@inertiajs/react';
 import { useEffect,useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import SearchDocument from '@/Components/SearchDocument';
+import { setFormData } from '@/Utils/setFormData';
 import Grid from '@mui/material/Unstable_Grid2';
+import api from '@/lib/axios';
 
 export default function Form({ open,handleClose,initFormData,handleRefresh }){
     const theme = useTheme();
-    const [title,setTitle]=useState('Registrar Clientes');
-    const { reset, data, setData, post, processing, errors,clearErrors } = useForm({
+    const defaultForm={
         id:-1,
         full_names: '',
         dni:'',
         phone:'',
         address:''
-    });
-    useEffect(() => {
-        if (open) {
-            if (initFormData !== null) {
-                setData(initFormData);
-                setTitle('Editar Cliente');
-            } else {
-                reset();
-                setTitle('Registrar Cliente');
-            }
-            clearErrors(); // Limpiar errores al abrir
-        }
-    }, [open, initFormData]);
-
-    // Limpiar formulario al cerrar
-    const handleModalClose = () => {
-        reset();
-        clearErrors();
-        handleClose();
     };
 
-    function handleSubmit(e) {
-        e.preventDefault()
-        post(route('customers.store'),{
-            onSuccess:()=>{
-                toast.success('Datos guardados con éxito!');
-                reset();
-                handleRefresh();
-                handleClose();
-            }
-        })
+    // Estado del formulario
+    const { errors } = usePage().props;
+    const [form, setForm] = useState({ ...defaultForm });
+    const [processing, setProcessing] = useState(false);
+
+    const reset=()=>{
+        setForm({ ...defaultForm });
     }
+
+    // Función para actualizar campos individuales del formulario
+    const setData = (key, value) => {
+        setForm(prev => ({
+            ...prev,
+            [key]: value
+        }));
+    };
+
+    // Effect para llenar el formulario cuando se pasa initFormData
+    useEffect(() => {
+        if (initFormData !== null) {
+            setFormData(setData, defaultForm, initFormData);
+        } else {
+            reset();
+        }
+    }, [initFormData]);
+
+    // Limpiar errores cuando se cierra el modal
+    useEffect(() => {
+        if (!open) {
+            reset();
+        }
+    }, [open]);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setProcessing(true);
+        api.post(route('customers.store'), form)
+        .then((res) => {
+            const customer = res.data;
+            toast.success('Datos guardados con éxito!');
+            // Llamar a handleRefresh
+            if (handleRefresh) {
+                handleRefresh(customer);
+            }
+
+            handleClose();
+        })
+        .catch(({ response }) => {
+            if (response?.status === 422) {
+                const { errors } = response.data;
+                for (const msgs of Object.values(errors)) {
+                    toast.error(msgs[0]);
+                }
+            } else {
+                toast.error('Ocurrió un error inesperado');
+            }
+        }).finally(() => setProcessing(false));
+    };
 
     const handleSearchDni = (response)=>{
         setData('dni',response);
@@ -67,7 +96,12 @@ export default function Form({ open,handleClose,initFormData,handleRefresh }){
             fullWidth
             maxWidth="sm"
             open={open}
-            onClose={handleModalClose}
+            onClose={(event, reason) => {
+                if (reason !== 'backdropClick') {
+                    handleClose();
+                }
+            }}
+            disableEscapeKeyDown={false}
             transitionDuration={{
                 enter: theme.transitions.duration.shortest,
                 exit: theme.transitions.duration.shortest - 80,
@@ -82,7 +116,9 @@ export default function Form({ open,handleClose,initFormData,handleRefresh }){
             }}
             sx={{alignSelf: 'flex-start'}}
         >
-            <DialogTitle sx={{ minHeight: 30,height:30,py:1 }}>{title}</DialogTitle>
+            <DialogTitle sx={{ minHeight: 30,height:30,py:1 }}>
+                {form.id>0 ? 'Editar Cliente' : 'Nuevo Cliente'}
+            </DialogTitle>
             <form onSubmit={handleSubmit}>
                 {/* <Scrollbar fillContent sx={{ px: 3 }}> */}
                     <Stack spacing={3} sx={{px:3, pb:2}}>
@@ -90,7 +126,7 @@ export default function Form({ open,handleClose,initFormData,handleRefresh }){
                             <Grid xs={12} md={12} lg={12}>
                                 <SearchDocument
                                     label="Dni"
-                                    value={data.dni}
+                                    value={form.dni}
                                     path="dni.search"
                                     autofocus={true}
                                     onChange={handleSearchDni}
@@ -105,7 +141,7 @@ export default function Form({ open,handleClose,initFormData,handleRefresh }){
                                 <TextField
                                     label="Nombres"
                                     name="full_names"
-                                    value={data.full_names}
+                                    value={form.full_names}
                                     onChange={e => setData('full_names', e.target.value)}
                                     error={errors.full_names?true:false}
                                     size="small"
@@ -117,7 +153,7 @@ export default function Form({ open,handleClose,initFormData,handleRefresh }){
                                 <TextField
                                     label="Dirección"
                                     name="address"
-                                    value={data.address}
+                                    value={form.address}
                                     onChange={e => setData('address', e.target.value)}
                                     error={errors.address?true:false}
                                     size="small"
@@ -129,7 +165,7 @@ export default function Form({ open,handleClose,initFormData,handleRefresh }){
                                 <TextField
                                     label="Teléfono"
                                     name="phone"
-                                    value={data.phone}
+                                    value={form.phone}
                                     onChange={e => setData('phone', e.target.value)}
                                     error={errors.phone?true:false}
                                     size="small"
@@ -140,7 +176,7 @@ export default function Form({ open,handleClose,initFormData,handleRefresh }){
                     </Stack>
                 {/* </Scrollbar> */}
                 <DialogActions sx={{py:1,px:3}}>
-                    <Button color="error" onClick={handleModalClose}>
+                    <Button color="error" onClick={handleClose}>
                         Cancelar
                     </Button>
                     <LoadingButton

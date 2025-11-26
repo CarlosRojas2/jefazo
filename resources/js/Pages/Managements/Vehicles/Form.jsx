@@ -66,7 +66,12 @@ export default function Form({ open,handleClose,initFormData,handleRefresh }){
             fullWidth
             maxWidth="sm"
             open={open}
-            onClose={handleModalClose}
+            onClose={(event, reason) => {
+                if (reason !== 'backdropClick') {
+                    handleClose();
+                }
+            }}
+            disableEscapeKeyDown={false}
             transitionDuration={{
                 enter: theme.transitions.duration.shortest,
                 exit: theme.transitions.duration.shortest - 80,
@@ -86,7 +91,7 @@ export default function Form({ open,handleClose,initFormData,handleRefresh }){
                 {/* <Scrollbar fillContent sx={{ px: 3 }}> */}
                     <Stack spacing={3} sx={{px:3, pb:2}}>
                         <Grid container spacing={1} sx={{pt:1}}>
-                            <Grid xs={12} md={12} lg={12}>
+                            <Grid xs={12} md={12} lg={12} sx={{ display: 'flex' }}>
                                 <PartialCustomer
                                     path='customers.search'
                                     id={initFormData?initFormData.customer_id:null}

@@ -46,9 +46,8 @@ class CustomerController extends Controller{
         $customer->fill($request->all());
         $customer->save();
 
-        return redirect()->route("customers.index");
+        return response()->json($customer);
     }
-
 
     public function show(Customer $customer){
         return response()->json($customer);
@@ -85,7 +84,7 @@ class CustomerController extends Controller{
     public function autocomplete(Request $request){
         $search='%'.Str::upper($request->input('search')).'%';
         $id = $request->id;
-        $records=Customer::select('id','full_names')
+        $records=Customer::select('id','full_names','phone','address','dni')
         ->with(['vehicles'])
         ->where(function($query) use($id,$search){
             if($id){

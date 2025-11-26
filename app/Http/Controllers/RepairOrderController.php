@@ -80,21 +80,36 @@ class RepairOrderController extends Controller{
     }
 
     public function revert(Request $request){
-        $request->validate([
-            'path' => 'required|string',
-        ]);
-        $path = $request->input('path');
-        // Asegúrate de eliminar el archivo del disco
-        if (Storage::disk('public')->exists($path)) {
-            Storage::disk('public')->delete($path);
+        try {
+            // FilePond envía el path como texto plano en el body
+            $path = $request->getContent();
+            
+            // Limpiar el path de posibles comillas, espacios y caracteres extraños
+            $path = trim($path);
+            $path = trim($path, '"\'');
+            
+            // Verificar que el path no esté vacío
+            if (empty($path)) {
+                return response()->json(['error' => 'Path no proporcionado'], 400);
+            }
+            
+            // Eliminar el archivo del disco si existe
+            if (Storage::disk('public')->exists($path)) {
+                Storage::disk('public')->delete($path);
+            } else {
+            }
+            
+            // Eliminar el registro de la base de datos si existe
+            $image = Image::where('path', $path)->first();
+            if ($image) {
+                $image->delete();
+            }
+            
+            return response('', 200); // FilePond espera respuesta vacía con código 200
+            
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al eliminar la imagen'], 500);
         }
-        // Elimina o manda a papelera el registro si ya está en la BD
-        $image = Image::where('path', $path)->first();
-        if ($image) {
-            $image->delete(); // Soft delete si tu modelo usa SoftDeletes
-        }
-
-        return response()->json(['message' => 'Imagen eliminada']);
     }
 
     public function deleteImage(Request $request){
