@@ -6,46 +6,86 @@ import Button from '@mui/material/Button';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
-import { useForm  } from '@inertiajs/react';
-import { useMemo,useState } from 'react';
+import { usePage  } from '@inertiajs/react';
+import { useEffect,useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import Grid from '@mui/material/Unstable_Grid2';
+import { setFormData } from '@/Utils/setFormData';
+import api from '@/lib/axios';
 
 export default function Form({ open,handleClose,initFormData,handleRefresh }){
     const theme = useTheme();
-    const [title,setTitle]=useState('Registrar Servicio');
-    const { reset, data, setData, post, processing, errors } = useForm({
+    const defaultForm={
         id:-1,
         description:''
-    });
-    useMemo(()=>{
-        if(initFormData!==null){
-            setData(initFormData);
-            setTitle('Editar Servicio');
-        }else{
-            reset();
-            setTitle('Registrar Servicio');
-        }
-    },[initFormData]);
+    };
+    // Estado del formulario
+    const { errors } = usePage().props;
+    const [form, setForm] = useState({ ...defaultForm });
+    const [processing, setProcessing] = useState(false);
 
-    function handleSubmit(e) {
-        e.preventDefault()
-        post(route('services.store'),{
-            onSuccess:()=>{
-                toast.success('Datos guardados con éxito!');
-                reset();
-                handleRefresh();
-                handleClose();
-            }
-        })
+    const reset=()=>{
+        setForm({ ...defaultForm });
     }
 
+    // Función para actualizar campos individuales del formulario
+    const setData = (key, value) => {
+        setForm(prev => ({
+            ...prev,
+            [key]: value
+        }));
+    };
+
+    // Effect para llenar el formulario cuando se pasa initFormData
+    useEffect(() => {
+        if (initFormData !== null) {
+            setFormData(setData, defaultForm, initFormData);
+        } else {
+            reset();
+        }
+    }, [initFormData]);
+
+    // Limpiar errores cuando se cierra el modal
+    useEffect(() => {
+        if (!open) {
+            reset();
+        }
+    }, [open]);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setProcessing(true);
+        api.post(route('services.store'), form)
+        .then((res) => {
+            const customer = res.data;
+            toast.success('Datos guardados con éxito!');
+            // Llamar a handleRefresh
+            if (handleRefresh) {
+                handleRefresh(customer);
+            }
+            handleClose();
+        })
+        .catch(({ response }) => {
+            if (response?.status === 422) {
+                const { errors } = response.data;
+                for (const msgs of Object.values(errors)) {
+                    toast.error(msgs[0]);
+                }
+            } else {
+                toast.error('Ocurrió un error inesperado');
+            }
+        }).finally(() => setProcessing(false));
+    };
     return (
         <Dialog
             fullWidth
             maxWidth="sm"
             open={open}
-            onClose={handleClose}
+            onClose={(event, reason) => {
+                if (reason !== 'backdropClick') {
+                    handleClose();
+                }
+            }}
             transitionDuration={{
                 enter: theme.transitions.duration.shortest,
                 exit: theme.transitions.duration.shortest - 80,
@@ -60,7 +100,9 @@ export default function Form({ open,handleClose,initFormData,handleRefresh }){
             }}
             sx={{alignSelf: 'flex-start'}}
         >
-            <DialogTitle sx={{ minHeight: 30,height:30,py:1 }}>{title}</DialogTitle>
+            <DialogTitle sx={{ minHeight: 30,height:30,py:1 }}>
+                {form.id>0 ? 'Editar servicio' : 'Nuevo servicio'}
+            </DialogTitle>
             <form onSubmit={handleSubmit}>
                 <Stack spacing={3} sx={{px:3, pb:2}}>
                     <Grid container spacing={1} sx={{pt:1}}>
@@ -68,7 +110,7 @@ export default function Form({ open,handleClose,initFormData,handleRefresh }){
                             <TextField
                                 label="Descripción"
                                 name="description"
-                                value={data.description}
+                                value={form.description}
                                 onChange={e => setData('description', e.target.value)}
                                 error={errors.description?true:false}
                                 size="small"

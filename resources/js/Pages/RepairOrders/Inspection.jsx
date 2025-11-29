@@ -41,15 +41,6 @@ export default function Inspection() {
         setData(old => ({ ...old, inspections: inspections, repair_order_id: repair_order.id }));
     }
 
-    function handleSubmit(event) {
-        event.preventDefault()
-        post(route('repair_orders.diagnose'), {
-            onSuccess: () => {
-                toast.success('Datos guardados con éxito!');
-            }
-        })
-    }
-
     const handleGenerate = (event) => {
         event.preventDefault();
         post(route('repair_orders.generate.inspection'), {
@@ -111,7 +102,7 @@ export default function Inspection() {
                 <Grid container spacing={1}>
                     <Grid xs={12} md={12}>
                         <Card sx={{ p: 2 }}>
-                            <form onSubmit={handleSubmit}>
+                            <form onSubmit={handleGenerate}>
                                 <Box
                                     rowGap={3}
                                     columnGap={2}
@@ -239,15 +230,6 @@ export default function Inspection() {
                             sx={{ minWidth: 200 }}
                         >
                             Actualizar inspección
-                        </Button>
-                        <Button
-                            variant="contained"
-                            color="success"
-                            onClick={handleSubmit}
-                            disabled={processing}
-                            sx={{ minWidth: 120 }}
-                        >
-                            Guardar
                         </Button>
                     </Stack>
                 </Box>

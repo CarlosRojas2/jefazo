@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState,useEffect } from 'react';
 import { Head,router } from '@inertiajs/react';
 import { DashboardLayout,DashboardContent } from '@/Layouts/dashboard';
 import { toast } from '@/Template/Components/snackbar';
@@ -10,12 +10,6 @@ import DataGrid from '@/Components/DataGrid';
 import axios from 'axios';
 const RepairOrder = ()=>{
     const columns = [
-        {
-            field: 'id',
-            headerName: '#',
-            width: 90,
-            headerClassName: 'super-app-theme--header',
-        },
         {
             field: 'customer',
             headerName: 'Cliente',
@@ -61,6 +55,7 @@ const RepairOrder = ()=>{
         }
     ];
     const [refresh, setRefresh] = useState(false);
+    const [showInspection,setShowInspection]=useState(false);
     const [selectedRecord, setSelectedRecord] = useState(null);
     const handleEdit=()=>{
         if(selectedRecord.length<=0){
@@ -115,6 +110,7 @@ const RepairOrder = ()=>{
     const handleSelectedRow = (data) => {
         setSelectedRecord(data);
     };
+
     const refreshGrid=()=>{
         setRefresh(true);
     }

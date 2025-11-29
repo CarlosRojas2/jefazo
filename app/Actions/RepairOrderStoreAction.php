@@ -77,12 +77,12 @@ class RepairOrderStoreAction{
             $repair_order->services()->sync($services);
         }
 
-        foreach($attributes['parts'] as $repair_part){
-            $parts[$repair_part['id']] = [
-                'quantity' => $repair_part['quantity'],
+        foreach($attributes['articles'] as $article){
+            $articles[$article['id']] = [
+                'quantity' => $article['quantity'],
             ];
             // Sincroniza los servicios (agrega, actualiza, elimina)
-            $repair_order->parts()->sync($parts);
+            $repair_order->articles()->sync($articles);
         }
         $repair_order->save();
     }

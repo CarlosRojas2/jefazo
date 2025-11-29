@@ -84,7 +84,8 @@ function CustomNoRowsOverlay() {
     );
 }
 
-export default function DataGridDemo({ returnSelectedRow,columns,refresh,title,path,dblClick }) {
+export default function DataGridDemo({ returnSelectedRow,columns,refresh,title,path,dblClick, showCorrelative = true }) {
+    
     const columns_array = useMemo(()=>{
         let columns_arr=[];
         columns.forEach((item)=>{
@@ -97,8 +98,8 @@ export default function DataGridDemo({ returnSelectedRow,columns,refresh,title,p
         search:'',
         columnFilters: {},
         sort: {
-            field: '', // example: 'name'
-            sort: 'asc' // 'asc' or 'desc'
+            field: '',
+            sort: 'asc'
         },
         columns:columns_array,
         total:0,
@@ -111,6 +112,33 @@ export default function DataGridDemo({ returnSelectedRow,columns,refresh,title,p
         data:[],
         total:0
     });
+
+    // Agregar columna de correlativo automáticamente si showCorrelative es true
+    const enhancedColumns = useMemo(() => {
+        if (!showCorrelative) return columns;
+        
+        const correlativeColumn = {
+            field: 'correlativo',
+            headerName: 'N°',
+            width: 70,
+            sortable: false,
+            filterable: false,
+            renderCell: (params) => {
+                if (!pageState.data || pageState.data.length === 0) return '';
+                const index = pageState.data.findIndex(row => row.id === params.row.id);
+                if (index === -1) return '';
+                return serverParams.page * serverParams.perPage + index + 1;
+            }
+        };
+        
+        return [correlativeColumn, ...columns];
+    }, [columns, showCorrelative, pageState.data, serverParams.page, serverParams.perPage]);
+
+    const [rowSelectionModel, setRowSelectionModel] = useState([]);
+
+    useEffect(()=>{
+        returnSelectedRow(rowSelectionModel);
+    },[rowSelectionModel]);
 
     useEffect(()=>{
         serverSide();
@@ -134,10 +162,7 @@ export default function DataGridDemo({ returnSelectedRow,columns,refresh,title,p
             console.error('Error al obtener los datos:', error);
         })
     }
-    const [rowSelectionModel, setRowSelectionModel] = useState([]);
-    useEffect(()=>{
-        returnSelectedRow(rowSelectionModel);
-    },[rowSelectionModel]);
+
     return (
         <>
             <Stack
@@ -180,7 +205,7 @@ export default function DataGridDemo({ returnSelectedRow,columns,refresh,title,p
                     rows={pageState.data}
                     rowCount={pageState.total}
                     loading={pageState.isLoading}
-                    columns={columns}
+                    columns={enhancedColumns}
                     pageSizeOptions={[5,10,30,50,70,100]}
                     columnHeaderHeight={45}
                     paginationModel={{page:serverParams.page,pageSize:serverParams.perPage}}
@@ -194,7 +219,6 @@ export default function DataGridDemo({ returnSelectedRow,columns,refresh,title,p
                     slots={{
                         noRowsOverlay: CustomNoRowsOverlay,
                         loadingOverlay: LinearProgress,
-                        // toolbar: CustomToolbar
                     }}
                     sortingMode='server'
                     onSortModelChange={(sortModel)=>{
@@ -218,7 +242,6 @@ export default function DataGridDemo({ returnSelectedRow,columns,refresh,title,p
                         "& .status-diagnosed": { color: "success.main" },
                     }}
                     onRowDoubleClick={dblClick}
-                    // localeText={esES.components.MuiDataGrid.defaultProps.localeText}
                 />
             </Box>
         </>

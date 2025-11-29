@@ -25,7 +25,7 @@ export const navData = [
 
     {
         title: 'Repuestos',
-        path: 'repair_parts.index',
+        path: 'articles.index',
         icon: icon('ic-label')
     },
     {

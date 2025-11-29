@@ -5,8 +5,7 @@ import Stack from '@mui/material/Stack';
 import { useCallback, useState,useEffect,useMemo } from 'react';
 import { Iconify } from '@/Template/Components/iconify';
 import PartialService  from '@/Pages/Partials/PartialService';
-import PartialRepairPart  from '@/Pages/Partials/PartialRepairPart';
-import Button from '@mui/material/Button';
+import PartialArticle  from '@/Pages/Partials/PartialArticle';
 import Card from '@mui/material/Card';
 import { toast } from '@/Template/Components/snackbar';
 import IconButton from '@mui/material/IconButton';
@@ -30,21 +29,34 @@ import Tooltip from '@mui/material/Tooltip';
 import { format,parse } from 'date-fns';
 import { setFormData } from '@/Utils/functions';
 import Toolbar from '@mui/material/Toolbar';
+import Divider from '@mui/material/Divider';
+
 export default function Form() {
     const { data, setData, post, processing, errors } = useForm({
         id:-1,
         status:'REVISADO',
         services:[],
-        parts:[]
+        articles:[]
     });
     const { repair_order } = usePage().props;
     const [title,setTitle]=useState('');
+    
+    // Calcular el total de la proforma
+    const totalAmount = useMemo(() => {
+        return data.articles.reduce((sum, article) => {
+            const quantity = parseFloat(article.quantity) || 0;
+            const price = parseFloat(article.price) || 0;
+            return sum + (quantity * price);
+        }, 0);
+    }, [data.articles]);
+
     useEffect(() => {
         if (repair_order !== undefined) {
             setForm();
             setTitle('Orden de reparación - '+ repair_order.correlative);
         }
     }, [repair_order]);
+    
     const setForm = ()=>{
         setFormData(data, repair_order);
         let services =[];
@@ -55,18 +67,24 @@ export default function Form() {
                 observations:service.pivot.observations
             });
         });
-        let parts =[];
-        data.parts.forEach((part)=>{
-            parts.push({
-                id:part.id,
-                repair_part:part.description,
-                quantity:part.pivot.quantity
+        let articles =[];
+        data.articles.forEach((article)=>{
+            articles.push({
+                id:article.id,
+                article:article.description,
+                quantity:article.pivot.quantity,
+                price:article.pivot.price || article.price || 0 // Obtener precio del pivot o del artículo
             });
         });
-        setData(old=>({...old,services:services,parts:parts}));
+        setData(old=>({...old,services:services,articles:articles}));
     }
+    
     function handleSubmit(event) {
-        event.preventDefault()
+        event.preventDefault();
+        if(data.status!='REVISADO'){
+            toast.error('El estado debe ser REVISADO para continuar.');
+            return;
+        }
         post(route('repair_orders.diagnose'),{
             onSuccess:()=>{
                 toast.success('Datos guardados con éxito!');
@@ -97,55 +115,73 @@ export default function Form() {
         });
         setData(newData);
     }
+    
     const handleRemoveService = (service)=>{
         const newData = {...data};
         newData.services.splice(newData.services.indexOf(service),1);
         setData(newData);
     };
+    
     const handleObservations = (index, value) => {
         setData((prevState) => {
-            const updatedServices = [...prevState.services]; // Crear una copia del arreglo
+            const updatedServices = [...prevState.services];
             updatedServices[index] = {
-                ...updatedServices[index], // Copiar el objeto de servicio actual
-                observations: value,      // Actualizar el campo observations
+                ...updatedServices[index],
+                observations: value,
             };
-            return { ...prevState, services: updatedServices }; // Retornar el nuevo estado
+            return { ...prevState, services: updatedServices };
         });
     };
-    const setRepairPart=(repair_part)=>{
-        if(!repair_part){
+    
+    const setArticle=(article)=>{
+        if(!article){
             return;
         }
-        const found = data.parts.find((item)=>{
-            return (item.id==repair_part.id);
+        const found = data.articles.find((item)=>{
+            return (item.id==article.id);
         });
         if(found!=undefined){
             toast.warning('La pieza ya fue agregada!');
             return;
         }
         const newData = {...data};
-        newData.parts.push({
-            id:repair_part.id,
-            repair_part:repair_part.description,
-            quantity:1
+        newData.articles.push({
+            id:article.id,
+            article:article.description,
+            quantity:1,
+            price:article.price || 0 // Asegurarse de incluir el precio del artículo
         });
         setData(newData);
     }
+    
     const handleQuantity = (index, value) => {
         setData((prevState) => {
-            const updatedRepairParts = [...prevState.parts]; // Crear una copia del arreglo
-            updatedRepairParts[index] = {
-                ...updatedRepairParts[index], // Copiar el objeto de la pieza de reparación actual
-                quantity: value,      // Actualizar el campo cantidad
+            const updatedArticles = [...prevState.articles];
+            updatedArticles[index] = {
+                ...updatedArticles[index],
+                quantity: value,
             };
-            return { ...prevState, parts: updatedRepairParts }; // Retornar el nuevo estado
+            return { ...prevState, articles: updatedArticles };
         });
     };
-    const handleRemovePart = (part)=>{
+    
+    const handlePrice = (index, value) => {
+        setData((prevState) => {
+            const updatedArticles = [...prevState.articles];
+            updatedArticles[index] = {
+                ...updatedArticles[index],
+                price: value,
+            };
+            return { ...prevState, articles: updatedArticles };
+        });
+    };
+    
+    const handleRemoveArticle = (article)=>{
         const newData = {...data};
-        newData.parts.splice(newData.parts.indexOf(part),1);
+        newData.articles.splice(newData.articles.indexOf(article),1);
         setData(newData);
     };
+    
     return (
         <DashboardLayout>
             <Head title='Diagnosticar'></Head>
@@ -205,7 +241,6 @@ export default function Form() {
                                                     }
                                                 ]}
                                             >
-
                                                 <Typography
                                                     sx={{ flex: '1 1 100%' }}
                                                     variant="h6"
@@ -302,41 +337,66 @@ export default function Form() {
                                                 >
                                                     Piezas de reparación
                                                 </Typography>
-                                                <PartialRepairPart
-                                                    path='repair_parts.search'
-                                                    handleSet={setRepairPart}
-                                                ></PartialRepairPart>
+                                                <PartialArticle
+                                                    path='articles.search'
+                                                    handleSet={setArticle}
+                                                ></PartialArticle>
                                             </Toolbar>
                                             <TableContainer sx={{ maxHeight: 220 }} component={Paper}>
                                                 <Table stickyHeader aria-label="sticky table" size="small">
                                                     <TableHead>
                                                         <TableRow sx={{ height: 10 }}>
-                                                            <TableCell width='60%'>Descripción</TableCell>
-                                                            <TableCell width='6%'>Cantidad</TableCell>
+                                                            <TableCell width='40%'>Descripción</TableCell>
+                                                            <TableCell width='10%' align="right">Cant.</TableCell>
+                                                            <TableCell width='15%' align="right">Precio</TableCell>
+                                                            <TableCell width='15%' align="right">Subtotal</TableCell>
                                                             <TableCell width='1%' align="center"></TableCell>
                                                         </TableRow>
                                                     </TableHead>
                                                     <TableBody>
-                                                        {data.parts.map((part,index) => (
+                                                        {data.articles.map((article,index) => (
                                                             <TableRow
-                                                                key={part.id}
+                                                                key={article.id}
                                                                 sx={{ '&:last-child td, &:last-child th': { border: 0 },mineight:10 }}
                                                             >
                                                                 <TableCell sx={{px:1,py:0}}>
                                                                     <Typography variant="caption" display="block" gutterBottom>
-                                                                        {part.repair_part}
+                                                                        {article.article}
                                                                     </Typography>
                                                                 </TableCell>
-                                                                <TableCell sx={{py:1}}>
+                                                                <TableCell sx={{py:1,px:1}}>
                                                                     <TextField
-                                                                        value={part.quantity}
+                                                                        value={article.quantity}
                                                                         onChange={(e) => handleQuantity(index, e.target.value)}
                                                                         size='small'
-                                                                        key={index}
+                                                                        type="number"
                                                                         fullWidth
-                                                                        inputProps={{onFocus:(event)=>event.target.select()}}
+                                                                        inputProps={{
+                                                                            onFocus:(event)=>event.target.select(),
+                                                                            style: { textAlign: 'right' }
+                                                                        }}
                                                                         sx={{ '& .MuiInputBase-root': { height: 27 } }}
                                                                     />
+                                                                </TableCell>
+                                                                <TableCell sx={{py:1,px:1}}>
+                                                                    <TextField
+                                                                        value={article.price}
+                                                                        onChange={(e) => handlePrice(index, e.target.value)}
+                                                                        size='small'
+                                                                        type="number"
+                                                                        fullWidth
+                                                                        inputProps={{
+                                                                            onFocus:(event)=>event.target.select(),
+                                                                            step: "0.01",
+                                                                            style: { textAlign: 'right' }
+                                                                        }}
+                                                                        sx={{ '& .MuiInputBase-root': { height: 27 } }}
+                                                                    />
+                                                                </TableCell>
+                                                                <TableCell align="right" sx={{py:0,px:1}}>
+                                                                    <Typography variant="caption" display="block">
+                                                                        {((parseFloat(article.quantity) || 0) * (parseFloat(article.price) || 0)).toFixed(2)}
+                                                                    </Typography>
                                                                 </TableCell>
                                                                 <TableCell align="center" sx={{px:1,py:0}}>
                                                                     <Tooltip
@@ -358,7 +418,7 @@ export default function Form() {
                                                                             aria-label="delete"
                                                                             color="error"
                                                                             size='small'
-                                                                            onClick={()=>handleRemovePart(part)}
+                                                                            onClick={()=>handleRemoveArticle(article)}
                                                                         >
                                                                             <Iconify icon="solar:trash-bin-trash-bold" />
                                                                         </IconButton>
@@ -369,6 +429,19 @@ export default function Form() {
                                                     </TableBody>
                                                 </Table>
                                             </TableContainer>
+                                            
+                                            {/* Total de la proforma */}
+                                            <Box sx={{ mt: 2, px: 2 }}>
+                                                <Divider sx={{ mb: 1 }} />
+                                                <Stack direction="row" justifyContent="flex-end" alignItems="center" spacing={2}>
+                                                    <Typography variant="h6">
+                                                        Total:
+                                                    </Typography>
+                                                    <Typography variant="h6" color="primary">
+                                                        S/ {totalAmount.toFixed(2)}
+                                                    </Typography>
+                                                </Stack>
+                                            </Box>
                                         </Grid>
 
                                         <Grid xs={12} md={2} lg={2}>

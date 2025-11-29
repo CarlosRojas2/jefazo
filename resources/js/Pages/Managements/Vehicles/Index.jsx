@@ -11,12 +11,6 @@ import Form from '@/Pages/Managements/Vehicles/Form';
 const Vehicle = ()=>{
     const columns = [
         {
-            field: 'id',
-            headerName: '#',
-            width: 80,
-            headerClassName: 'super-app-theme--header',
-        },
-        {
             field: 'customer',
             headerName: 'Representante',
             width: 300,

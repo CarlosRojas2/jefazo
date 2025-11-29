@@ -11,12 +11,6 @@ import Form from '@/Pages/Managements/Services/Form';
 const Service = ()=>{
     const columns = [
         {
-            field: 'id',
-            headerName: '#',
-            width: 90,
-            headerClassName: 'super-app-theme--header',
-        },
-        {
             field: 'description',
             headerName: 'Descripción',
             width: 400,

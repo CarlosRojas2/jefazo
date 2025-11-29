@@ -18,7 +18,7 @@ class ServiceController extends Controller{
         }
         $service->fill( $request->all());
         $service->save();
-        return redirect()->route("services.index");
+        return response()->json($service);
     }
 
     public function show(Service $service){

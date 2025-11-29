@@ -22,8 +22,8 @@ class RepairOrder extends Model{
         ->withTimestamps();
     }
 
-    public function parts(){
-        return $this->belongsToMany(RepairPart::class, 'repair_order_parts')
+    public function articles(){
+        return $this->belongsToMany(Article::class, 'repair_order_articles')
         ->withPivot('quantity')
         ->withTimestamps();
     }

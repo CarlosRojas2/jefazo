@@ -234,7 +234,7 @@ class RepairOrderPrintAction{
         $pdf->SetFont('Helvetica','',8);
         $pdf->SetTextColor(0, 0, 0);
         
-        foreach ($order->parts as $k => $value) {
+        foreach ($order->articles as $k => $value) {
             $fill = ($k % 2 == 0);
             $pdf->SetFillColor($fill ? 245 : 255, $fill ? 245 : 255, $fill ? 245 : 255);
             

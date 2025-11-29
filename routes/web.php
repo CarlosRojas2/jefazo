@@ -1,4 +1,6 @@
 <?php
+
+use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
@@ -50,11 +52,11 @@ Route::middleware('auth')->group(function () {
     Route::resource('repair_orders', RepairOrderController::class)->only(['index','create','edit','show','destroy','store']);
 
     // Rutas para respuestos de reparación
-    Route::prefix('repair_parts')->name('repair_parts.')->group(function () {
-        Route::get('/list', [RepairPartController::class,'list'])->name('list');
-        Route::get('/search', [RepairPartController::class,'autocomplete'])->name('search');
+    Route::prefix('articles')->name('articles.')->group(function () {
+        Route::get('/list', [ArticleController::class,'list'])->name('list');
+        Route::get('/search', [ArticleController::class,'autocomplete'])->name('search');
     });
-    Route::resource('repair_parts', RepairPartController::class)->only(['index','show','destroy','store']);
+    Route::resource('articles', ArticleController::class)->only(['index','show','destroy','store']);
 
     // Rutas para partes de vehiculo
     Route::prefix('vehicle_parts')->name('vehicle_parts.')->group(function () {

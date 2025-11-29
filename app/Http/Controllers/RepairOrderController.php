@@ -122,7 +122,7 @@ class RepairOrderController extends Controller{
     }
 
     public function show($id){
-        $record=RepairOrder::with(['customer','vehicle','services','parts'])->findOrFail($id);
+        $record=RepairOrder::with(['customer','vehicle','services','articles'])->findOrFail($id);
         return Inertia::render("RepairOrders/Diagnose",[
             'repair_order'=>$record
         ]);
@@ -144,7 +144,7 @@ class RepairOrderController extends Controller{
             'customer',
             'vehicle',
             'services',
-            'parts',
+            'articles',
             'inspections'=>function($i){
                 $i->with('vehiclePart');
             }

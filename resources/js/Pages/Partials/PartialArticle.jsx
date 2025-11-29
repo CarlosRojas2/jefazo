@@ -5,11 +5,11 @@ import {Iconify} from '@/Template/Components/iconify';
 import IconButton from '@mui/material/IconButton';
 import { useState,useEffect, useMemo } from 'react';
 import { toast } from '@/Template/Components/snackbar';
-import Form from '@/Pages/Managements/Services/Form';
+import Form from '@/Pages/Managements/Articles/Form';
 import debounce from 'lodash.debounce';
 import api from '@/lib/axios';
 
-export default function PartialService({path,id,handleSet,error}){
+export default function PartialProduct({path,id,handleSet,error}){
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(false);
     const [selectedValue, setSelectedValue] = useState(null);
@@ -17,16 +17,15 @@ export default function PartialService({path,id,handleSet,error}){
     const [openDialog, setOpenDialog] = useState(false);
     const [dataFormEdit, setDataFormEdit] = useState(null);
 
-    const handleOpenNewService = () => {
+    const handleOpenNewProduct = () => {
         setOpenDialog(true);
     };
 
-    const handleOpenEditService = () => {
+    const handleOpenEditProduct = () => {
         if(!selectedValue){
-            toast.warning('Por favor seleccione un servicio para editar!');
+            toast.warning('Por favor seleccione un producto para editar!');
             return;
         }
-        console.log('sele',selectedValue);
         setDataFormEdit(selectedValue);
         setOpenDialog(true);
     };
@@ -53,20 +52,20 @@ export default function PartialService({path,id,handleSet,error}){
         });
     }
 
-    // Función para manejar el nuevo servicio
-    const handleAddService = (newService) => {
-        // Agregar el nuevo servicio a la lista
+    // Función para manejar el nuevo producto
+    const handleAddProduct = (newProduct) => {
+        // Agregar el nuevo producto a la lista
         setItems((prevItems) => {
             // Verificar si ya existe para evitar duplicados
-            const exists = prevItems.some(item => item.id === newService.id);
+            const exists = prevItems.some(item => item.id === newProduct.id);
             if (exists) {
                 return prevItems;
             }
-            return [...prevItems, newService];
+            return [...prevItems, newProduct];
         });
 
-        // Seleccionar automáticamente el nuevo servicio
-        setSelectedValue(newService);
+        // Seleccionar automáticamente el nuevo producto
+        setSelectedValue(newProduct);
 
         // Limpiar el search para que muestre el valor seleccionado
         setSearch('');
@@ -128,7 +127,7 @@ export default function PartialService({path,id,handleSet,error}){
                     renderInput={(params) => (
                         <TextField
                             {...params}
-                            label="Buscar servicio"
+                            label="Buscar producto"
                             fullWidth
                             size='small'
                             error={error}
@@ -149,7 +148,7 @@ export default function PartialService({path,id,handleSet,error}){
             {!selectedValue &&(
                 <IconButton
                     color="primary"
-                    onClick={handleOpenNewService}
+                    onClick={handleOpenNewProduct}
                 >
                     <Iconify width="25" height="25" icon='solar:widget-add-bold-duotone'/>
                 </IconButton>
@@ -158,7 +157,7 @@ export default function PartialService({path,id,handleSet,error}){
             {selectedValue &&(
                 <IconButton
                     color="warning"
-                    onClick={handleOpenEditService}
+                    onClick={handleOpenEditProduct}
                 >
                     <Iconify width="25" height="25" icon='hugeicons:dashboard-square-edit' />
                 </IconButton>
@@ -168,7 +167,7 @@ export default function PartialService({path,id,handleSet,error}){
                 open={openDialog}
                 handleClose={handleCloseDialog}
                 initFormData={dataFormEdit}
-                handleRefresh={handleAddService}
+                handleRefresh={handleAddProduct}
             />
         </>
     )

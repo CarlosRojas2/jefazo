@@ -11,12 +11,6 @@ import Form from '@/Pages/Managements/Customers/Form';
 const Customer = ()=>{
     const columns = [
         {
-            field: 'id',
-            headerName: '#',
-            width: 90,
-            headerClassName: 'super-app-theme--header',
-        },
-        {
             field: 'full_names',
             headerName: 'Nombres',
             width: 400,

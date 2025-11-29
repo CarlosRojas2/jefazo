@@ -7,15 +7,9 @@ import Button from '@mui/material/Button';
 import { Iconify } from '@/Template/Components/iconify';
 import LoadingButton from '@mui/lab/LoadingButton';
 import DataGrid from '@/Components/DataGrid';
-import Form from '@/Pages/Managements/RepairParts/Form';
-const RepairPart = ()=>{
+import Form from '@/Pages/Managements/Articles/Form';
+const Article = ()=>{
     const columns = [
-        {
-            field: 'id',
-            headerName: '#',
-            width: 90,
-            headerClassName: 'super-app-theme--header',
-        },
         {
             field: 'description',
             headerName: 'Descripción',
@@ -36,7 +30,7 @@ const RepairPart = ()=>{
             return;
         }
         setLoadingEdit(true);
-        axios.get(route('repair_parts.show',selectedRecord)).then(response => {
+        axios.get(route('articles.show',selectedRecord)).then(response => {
             setDataFormEdit(response.data)
             handleOpenDialog();
         }).catch(error => {
@@ -51,7 +45,7 @@ const RepairPart = ()=>{
             toast.warning('Por favor seleccione un registro para eliminar!');
             return;
         }
-        axios.delete(route('repair_parts.destroy',selectedRecord))
+        axios.delete(route('articles.destroy',selectedRecord))
         .then(response => {
             toast.success(response.data.message);
             refreshGrid();
@@ -118,16 +112,10 @@ const RepairPart = ()=>{
                 returnSelectedRow={handleSelectedRow}
                 columns={columns}
                 refresh={refresh}
-                title="Repuestos de Reparación"
-                path='repair_parts.list'
+                title="Artículos"
+                path='articles.list'
                 dblClick={handleEdit}
             />
-
-            {/* <Box display="flex" alignItems="center" mb={5}>
-                <Typography variant="h4" flexGrow={1}>
-                    Clientes
-                </Typography>
-            </Box> */}
             <Form
                 open={openDialog}
                 handleClose={handleCloseDialog}
@@ -137,5 +125,5 @@ const RepairPart = ()=>{
         </DashboardContent>
     );
 }
-RepairPart.layout = page => <DashboardLayout children={page} title="Clientes" />
-export default RepairPart
+Article.layout = page => <DashboardLayout children={page} title="Artículos" />
+export default Article
