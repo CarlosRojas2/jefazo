@@ -1,5 +1,5 @@
 [build]
-builder = "railpack/php"
+builder = "railpack"
 pkgExtensions = ["bcmath", "gd", "zip"]
 buildCommand = """
 corepack enable
