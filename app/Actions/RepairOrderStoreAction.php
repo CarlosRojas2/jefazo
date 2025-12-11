@@ -65,13 +65,23 @@ class RepairOrderStoreAction{
 
     public function diagnose($attributes){
         $repair_order=RepairOrder::find($attributes['id']);
+        // Calcular totales
+        $subtotalServices = collect($attributes['services'])->sum('price');
+        $subtotalArticles = collect($attributes['articles'])->sum(function ($article) {
+            return $article['quantity'] * $article['price'];
+        });
+
         $repair_order->status=$attributes['status'];
+        $repair_order->subtotal_services=$subtotalServices;
+        $repair_order->subtotal_articles=$subtotalArticles;
+        $repair_order->total=$subtotalServices + $subtotalArticles;
         if (!$repair_order) {
             return response()->json(['error' => 'Repair order not found'], 404);
         }
         foreach($attributes['services'] as $service){
             $services[$service['id']] = [
                 'observations' => $service['observations'],
+                'price' => $service['price'],
             ];
             // Sincroniza los servicios (agrega, actualiza, elimina)
             $repair_order->services()->sync($services);
@@ -80,6 +90,7 @@ class RepairOrderStoreAction{
         foreach($attributes['articles'] as $article){
             $articles[$article['id']] = [
                 'quantity' => $article['quantity'],
+                'price' => $article['price'],
             ];
             // Sincroniza los servicios (agrega, actualiza, elimina)
             $repair_order->articles()->sync($articles);

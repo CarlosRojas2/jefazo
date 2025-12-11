@@ -114,23 +114,12 @@ const RepairOrder = ()=>{
     const refreshGrid=()=>{
         setRefresh(true);
     }
-    const handlePrintOrder = async () => {
+    const handlePrintOrder = () => {
         if(selectedRecord.length<=0){
             toast.warning('Por favor seleccione un registro para imprimir!');
             return;
         }
-        try {
-            const response = await axios.get(route('repair_orders.print',selectedRecord), {
-                responseType: 'blob', // Necesario para manejar archivos binarios
-            });
-            // Crear una URL para el blob recibido
-            const blob = new Blob([response.data], { type: 'application/pdf' });
-            const url = window.URL.createObjectURL(blob);
-            // Abrir el PDF en una nueva ventana
-            window.open(url);
-        } catch (error) {
-            console.error('Error al generar el PDF:', error);
-        }
+        window.open(route('repair_orders.print',selectedRecord), '_blank');
     };
 
     return (

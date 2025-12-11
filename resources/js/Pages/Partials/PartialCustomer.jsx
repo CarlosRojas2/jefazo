@@ -128,6 +128,7 @@ export default function PartialCustomer({path,id,handleSet,error}){
                             {...params}
                             label="Buscar Cliente"
                             fullWidth
+                            autoFocus
                             size='small'
                             error={error}
                             inputProps={{

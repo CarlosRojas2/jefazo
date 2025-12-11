@@ -6,6 +6,7 @@ class RepairOrderArticle extends Model{
         'repair_order_id',
         'article_id',
         'quantity',
-        'price'
+        'price',
+        'total'
     ];
 }

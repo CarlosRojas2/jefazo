@@ -44,6 +44,9 @@ const Service = ()=>{
             toast.warning('Por favor seleccione un registro para eliminar!');
             return;
         }
+        if (!confirm('¿Estás seguro de eliminar?')) {
+            return;
+        }
         axios.delete(route('services.destroy',selectedRecord))
         .then(response => {
             toast.success('El Servicio se eliminó con éxito!');

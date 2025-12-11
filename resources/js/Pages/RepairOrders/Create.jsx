@@ -265,7 +265,7 @@ export default function Form() {
                                     <Grid container spacing={1} sx={{ pt: 1 }}>
                                         <Grid xs={12} md={12} lg={12}>
                                             <TextField
-                                                label="Requerimiento del cliente *"
+                                                label="Requerimiento del cliente (El cliente describe las fallas de su vehículo) *"
                                                 name="problem"
                                                 value={data.problem}
                                                 onChange={e => setData('problem', e.target.value)}
@@ -282,7 +282,7 @@ export default function Form() {
                                     <Grid container spacing={1} sx={{ pt: 1 }}>
                                         <Grid xs={12} md={12} lg={12}>
                                             <TextField
-                                                label="Observaciones"
+                                                label="Observaciones, el taller anota detalles adicionales"
                                                 name="observations"
                                                 value={data.observations}
                                                 onChange={e => setData('observations', e.target.value)}

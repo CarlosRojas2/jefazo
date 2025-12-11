@@ -1,28 +1,9 @@
 {
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
-    "builder": "RAILPACK",
-    "railpackBuildPhase": {
-      "extensions": [
-        "ctype",
-        "curl",
-        "dom",
-        "fileinfo",
-        "filter",
-        "hash",
-        "mbstring",
-        "openssl",
-        "pcre",
-        "pdo",
-        "session",
-        "tokenizer",
-        "xml",
-        "pdo_pgsql",
-        "redis",
-        "bcmath",
-        "zip",
-        "gd"
-      ]
-    }
+    "builder": "RAILPACK"
+  },
+  "deploy": {
+    "startCommand": "chmod -R 775 storage bootstrap/cache && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT"
   }
 }

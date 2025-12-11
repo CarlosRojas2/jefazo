@@ -36,3 +36,18 @@ createInertiaApp({
         showSpinner:true
     },
 });
+
+// Register service worker for PWA in production
+if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        try {
+            if (import.meta.env.PROD) {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((reg) => console.log('Service worker registered.', reg))
+                    .catch((err) => console.warn('Service worker registration failed:', err));
+            }
+        } catch (e) {
+            console.warn('SW registration error:', e);
+        }
+    });
+}

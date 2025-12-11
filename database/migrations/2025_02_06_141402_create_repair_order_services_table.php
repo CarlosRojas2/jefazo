@@ -8,7 +8,8 @@ return new class extends Migration{
             $table->id();
             $table->foreignId('repair_order_id')->constrained('repair_orders')->onDelete('cascade'); // FK a repair_orders
             $table->foreignId('service_id')->constrained('services')->onDelete('cascade'); // FK a services
-            $table->string('observations')->nullable(); // Cantidad del servicio
+            $table->string('observations')->nullable();
+            $table->decimal('price', 10, 2)->default(0.00);
             $table->softDeletes();
             $table->timestamps();
         });

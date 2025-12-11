@@ -45,6 +45,9 @@ const VehiclePart = ()=>{
             toast.warning('Por favor seleccione un registro para eliminar!');
             return;
         }
+        if (!confirm('¿Estás seguro de eliminar?')) {
+            return;
+        }
         axios.delete(route('vehicle_parts.destroy',selectedRecord))
         .then(response => {
             toast.success(response.data.message);

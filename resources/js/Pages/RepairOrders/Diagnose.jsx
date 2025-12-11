@@ -41,14 +41,27 @@ export default function Form() {
     const { repair_order } = usePage().props;
     const [title,setTitle]=useState('');
     
-    // Calcular el total de la proforma
-    const totalAmount = useMemo(() => {
+    // Calcular el total de servicios
+    const totalServices = useMemo(() => {
+        return data.services.reduce((sum, service) => {
+            const price = parseFloat(service.price) || 0;
+            return sum + price;
+        }, 0);
+    }, [data.services]);
+
+    // Calcular el total de artículos
+    const totalArticles = useMemo(() => {
         return data.articles.reduce((sum, article) => {
             const quantity = parseFloat(article.quantity) || 0;
             const price = parseFloat(article.price) || 0;
             return sum + (quantity * price);
         }, 0);
     }, [data.articles]);
+
+    // Total general de la proforma
+    const totalAmount = useMemo(() => {
+        return totalServices + totalArticles;
+    }, [totalServices, totalArticles]);
 
     useEffect(() => {
         if (repair_order !== undefined) {
@@ -64,7 +77,8 @@ export default function Form() {
             services.push({
                 id:service.id,
                 service:service.description,
-                observations:service.pivot.observations
+                observations:service.pivot.observations,
+                price:service.pivot.price || service.price || 0
             });
         });
         let articles =[];
@@ -111,7 +125,8 @@ export default function Form() {
         newData.services.push({
             id:service.id,
             service:service.description,
-            observations:''
+            observations:'',
+            price:service.price || 0
         });
         setData(newData);
     }
@@ -128,6 +143,17 @@ export default function Form() {
             updatedServices[index] = {
                 ...updatedServices[index],
                 observations: value,
+            };
+            return { ...prevState, services: updatedServices };
+        });
+    };
+    
+    const handleServicePrice = (index, value) => {
+        setData((prevState) => {
+            const updatedServices = [...prevState.services];
+            updatedServices[index] = {
+                ...updatedServices[index],
+                price: value,
             };
             return { ...prevState, services: updatedServices };
         });
@@ -260,8 +286,9 @@ export default function Form() {
                                                 <Table stickyHeader aria-label="sticky table" size="small">
                                                     <TableHead>
                                                         <TableRow sx={{ height: 10 }}>
-                                                            <TableCell width='20%'>Descripción</TableCell>
-                                                            <TableCell width='60%'>Observaciones</TableCell>
+                                                            <TableCell width='35%'>Descripción</TableCell>
+                                                            <TableCell width='40%'>Observaciones</TableCell>
+                                                            <TableCell width='15%' align="right">Precio</TableCell>
                                                             <TableCell width='1%' align="center"></TableCell>
                                                         </TableRow>
                                                     </TableHead>
@@ -271,12 +298,12 @@ export default function Form() {
                                                                 key={index}
                                                                 sx={{ '&:last-child td, &:last-child th': { border: 0 },mineight:10 }}
                                                             >
-                                                                <TableCell sx={{py:0}}>
+                                                                <TableCell sx={{py:0,px:1}}>
                                                                     <Typography variant="caption" display="block" gutterBottom>
                                                                         {service.service}
                                                                     </Typography>
                                                                 </TableCell>
-                                                                <TableCell sx={{py:1}}>
+                                                                <TableCell sx={{py:1,px:1}}>
                                                                     <TextField
                                                                         value={service.observations}
                                                                         onChange={(e) => handleObservations(index, e.target.value)}
@@ -285,6 +312,30 @@ export default function Form() {
                                                                         fullWidth
                                                                         inputProps={{onFocus:(event)=>event.target.select()}}
                                                                         sx={{ '& .MuiInputBase-root': { height: 25,pa:0 } }}
+                                                                    />
+                                                                </TableCell>
+                                                                <TableCell sx={{py:1,px:1}}>
+                                                                    <TextField
+                                                                        value={service.price}
+                                                                        onChange={(e) => handleServicePrice(index, e.target.value)}
+                                                                        size='small'
+                                                                        type="number"
+                                                                        fullWidth
+                                                                        inputProps={{
+                                                                            onFocus:(event)=>event.target.select(),
+                                                                            step: "0.01",
+                                                                            style: { textAlign: 'right' }
+                                                                        }}
+                                                                        sx={{ 
+                                                                            '& .MuiInputBase-root': { height: 25 },
+                                                                            '& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button': {
+                                                                                WebkitAppearance: 'none',
+                                                                                margin: 0
+                                                                            },
+                                                                            '& input[type=number]': {
+                                                                                MozAppearance: 'textfield'
+                                                                            }
+                                                                        }}
                                                                     />
                                                                 </TableCell>
                                                                 <TableCell align="center" sx={{px:1,py:0}}>
@@ -318,6 +369,18 @@ export default function Form() {
                                                     </TableBody>
                                                 </Table>
                                             </TableContainer>
+                                            
+                                            {/* Subtotal de servicios */}
+                                            <Box sx={{ mt: 1, px: 2 }}>
+                                                <Stack direction="row" justifyContent="flex-end" alignItems="center" spacing={2}>
+                                                    <Typography variant="body2" fontWeight="medium">
+                                                        Subtotal Servicios:
+                                                    </Typography>
+                                                    <Typography variant="body2" color="primary">
+                                                        S/ {totalServices.toFixed(2)}
+                                                    </Typography>
+                                                </Stack>
+                                            </Box>
                                         </Grid>
 
                                         <Grid xs={12} md={6} lg={6}>
@@ -375,7 +438,16 @@ export default function Form() {
                                                                             onFocus:(event)=>event.target.select(),
                                                                             style: { textAlign: 'right' }
                                                                         }}
-                                                                        sx={{ '& .MuiInputBase-root': { height: 27 } }}
+                                                                        sx={{ 
+                                                                            '& .MuiInputBase-root': { height: 27 },
+                                                                            '& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button': {
+                                                                                WebkitAppearance: 'none',
+                                                                                margin: 0
+                                                                            },
+                                                                            '& input[type=number]': {
+                                                                                MozAppearance: 'textfield'
+                                                                            }
+                                                                        }}
                                                                     />
                                                                 </TableCell>
                                                                 <TableCell sx={{py:1,px:1}}>
@@ -390,7 +462,16 @@ export default function Form() {
                                                                             step: "0.01",
                                                                             style: { textAlign: 'right' }
                                                                         }}
-                                                                        sx={{ '& .MuiInputBase-root': { height: 27 } }}
+                                                                        sx={{ 
+                                                                            '& .MuiInputBase-root': { height: 27 },
+                                                                            '& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button': {
+                                                                                WebkitAppearance: 'none',
+                                                                                margin: 0
+                                                                            },
+                                                                            '& input[type=number]': {
+                                                                                MozAppearance: 'textfield'
+                                                                            }
+                                                                        }}
                                                                     />
                                                                 </TableCell>
                                                                 <TableCell align="right" sx={{py:0,px:1}}>
@@ -430,15 +511,14 @@ export default function Form() {
                                                 </Table>
                                             </TableContainer>
                                             
-                                            {/* Total de la proforma */}
-                                            <Box sx={{ mt: 2, px: 2 }}>
-                                                <Divider sx={{ mb: 1 }} />
+                                            {/* Subtotal de artículos */}
+                                            <Box sx={{ mt: 1, px: 2 }}>
                                                 <Stack direction="row" justifyContent="flex-end" alignItems="center" spacing={2}>
-                                                    <Typography variant="h6">
-                                                        Total:
+                                                    <Typography variant="body2" fontWeight="medium">
+                                                        Subtotal Piezas:
                                                     </Typography>
-                                                    <Typography variant="h6" color="primary">
-                                                        S/ {totalAmount.toFixed(2)}
+                                                    <Typography variant="body2" color="primary">
+                                                        S/ {totalArticles.toFixed(2)}
                                                     </Typography>
                                                 </Stack>
                                             </Box>
@@ -461,6 +541,21 @@ export default function Form() {
                                                 ))}
                                                 </Select>
                                             </FormControl>
+                                        </Grid>
+
+                                        {/* Total General de la Proforma */}
+                                        <Grid xs={12} md={12} lg={12}>
+                                            <Box sx={{ mt: 2, px: 2, py: 2, bgcolor: 'background.neutral', borderRadius: 1 }}>
+                                                <Divider sx={{ mb: 2 }} />
+                                                <Stack direction="row" justifyContent="flex-end" alignItems="center" spacing={3}>
+                                                    <Typography variant="h5" fontWeight="bold">
+                                                        TOTAL PROFORMA:
+                                                    </Typography>
+                                                    <Typography variant="h4" color="primary" fontWeight="bold">
+                                                        S/ {totalAmount.toFixed(2)}
+                                                    </Typography>
+                                                </Stack>
+                                            </Box>
                                         </Grid>
                                     </Grid>
                                 </Box>

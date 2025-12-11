@@ -24,8 +24,6 @@ class PDFR extends Pdf {
             $this->SetTextColor(100, 100, 100);
             
             // Información del footer en 3 columnas
-            $this->Cell(63, 4, $this->decodeUtf8('www.jefazomotoservis.com'), 0, 0, 'L');
-            $this->Cell(64, 4, $this->decodeUtf8('Telf: 937122245'), 0, 0, 'C');
             $this->Cell(63, 4, $this->decodeUtf8('Página ') . $this->PageNo(), 0, 0, 'R');
             
             $this->Ln(3);
@@ -80,7 +78,6 @@ class RepairOrderPrintAction{
         $pdf->SetDrawColor(149,165,166);
         
         // ============ ENCABEZADO PROFESIONAL ============
-        // Fondo azul para header
         $pdf->SetFillColor(41, 128, 185);
         $pdf->Rect(0, 0, 210, 35, 'F');
         
@@ -96,13 +93,13 @@ class RepairOrderPrintAction{
         $pdf->SetFont('Arial','B',11);
         $pdf->SetTextColor(255, 255, 255);
         $pdf->SetXY(45, 8);
-        $pdf->Cell(90, 5, $this->decodeUtf8('JEFAZO MOTOSERVIS'), 0, 1, 'L');
+        $pdf->Cell(90, 5, $this->decodeUtf8('JEFAZO MOTOSERVIS SAC'), 0, 1, 'L');
         
         $pdf->SetFont('Arial','',7);
         $pdf->SetXY(45, 14);
-        $pdf->Cell(90, 3, $this->decodeUtf8('Dirección de la empresa'), 0, 1, 'L');
+        $pdf->Cell(90, 3, $this->decodeUtf8('Psj. Ventanilla lote 4, Banda de Shilcayo - sector satelite'), 0, 1, 'L');
         $pdf->SetXY(45, 17.5);
-        $pdf->Cell(90, 3, $this->decodeUtf8('Telf: 937122245 | Email: jefazo@gmail.com'), 0, 1, 'L');
+        $pdf->Cell(90, 3, $this->decodeUtf8('Telf: 920317611 | 942055046 | Email: Jefazomotoservis@gmail.com'), 0, 1, 'L');
         
         // Cuadro de información del documento
         $pdf->SetFillColor(255, 255, 255);
@@ -111,7 +108,7 @@ class RepairOrderPrintAction{
         $pdf->SetTextColor(52, 73, 94);
         $pdf->SetFont('Helvetica','B',8);
         $pdf->SetXY(145, 9);
-        $pdf->Cell(57, 4, $this->decodeUtf8('R.U.C. N° 20611473002'), 0, 1, 'C');
+        $pdf->Cell(57, 4, $this->decodeUtf8('R.U.C. N° 20607738484'), 0, 1, 'C');
         
         $pdf->SetFont('Helvetica','B',9);
         $pdf->SetXY(145, 14);
@@ -184,79 +181,139 @@ class RepairOrderPrintAction{
         $pdf->SetFont('arial','B',10);
         $pdf->SetTextColor(52, 73, 94);
         $pdf->Cell(195, 6, $this->decodeUtf8('SERVICIOS REALIZADOS'),0,1,'C',false);
-        $pdf->Ln(1);
+        $pdf->Ln(2);
+        
+        // Definir anchos de columnas
+        $anchoItemServ = 9;
+        $anchoServicio = 80;
+        $anchoObservaciones = 106;
         
         // Header de tabla con fondo oscuro
         $pdf->SetFillColor(52, 73, 94);
         $pdf->SetTextColor(255, 255, 255);
         $pdf->SetFont('arial','B',8);
-        $pdf->Cell(9, 6, $this->decodeUtf8('ITEM'), 1, 0, 'C', true);
-        $pdf->Cell(80, 6, $this->decodeUtf8('SERVICIO'), 1, 0, 'C', true);
-        $pdf->Cell(106, 6, $this->decodeUtf8('OBSERVACIONES'), 1, 1, 'C', true);
+        $pdf->Cell($anchoItemServ, 6, $this->decodeUtf8('ITEM'), 1, 0, 'C', true);
+        $pdf->Cell($anchoServicio, 6, $this->decodeUtf8('SERVICIO'), 1, 0, 'C', true);
+        $pdf->Cell($anchoObservaciones, 6, $this->decodeUtf8('OBSERVACIONES'), 1, 1, 'C', true);
         
         // Contenido con filas alternadas
         $pdf->SetFont('Helvetica','',8);
         $pdf->SetTextColor(0, 0, 0);
         
-        foreach ($order->services as $k => $value) {
-            $fill = ($k % 2 == 0);
-            $pdf->SetFillColor($fill ? 245 : 255, $fill ? 245 : 255, $fill ? 245 : 255);
-            
-            $pdf->SetWidths(array(9, 80, 106));
-            $pdf->Row(
-                array(
-                    str_pad(($k+1), 2, '0', 0),
-                    $this->decodeUtf8($value->description),
-                    $this->decodeUtf8($value->pivot->observations)
-                ),
-                array('C','L','L'),
-                1,
-                'Y',
-                array($fill ? 1 : 0, $fill ? 1 : 0, $fill ? 1 : 0),
-                3
-            );
+        if(count($order->services) > 0) {
+            foreach ($order->services as $k => $value) {
+                $fill = ($k % 2 == 0);
+                $pdf->SetFillColor($fill ? 245 : 255, $fill ? 245 : 255, $fill ? 245 : 255);
+                
+                // Calcular altura necesaria para el texto
+                $servicio = $this->decodeUtf8($value->description);
+                $observaciones = $this->decodeUtf8($value->pivot->observations);
+                $pdf->SetFont('Helvetica','',8);
+                
+                // Calcular líneas necesarias para cada columna
+                $nbServicio = 0;
+                $nbObservaciones = 0;
+                
+                if(strlen($servicio) > 0) {
+                    $nbServicio = ceil($pdf->GetStringWidth($servicio) / ($anchoServicio - 2));
+                }
+                if(strlen($observaciones) > 0) {
+                    $nbObservaciones = ceil($pdf->GetStringWidth($observaciones) / ($anchoObservaciones - 2));
+                }
+                
+                $altura = max(6, max($nbServicio, $nbObservaciones) * 4); // Altura dinámica
+                
+                // Dibujar celdas manualmente
+                $x = $pdf->GetX();
+                $y = $pdf->GetY();
+                
+                // ITEM
+                $pdf->Cell($anchoItemServ, $altura, str_pad(($k+1), 2, '0', STR_PAD_LEFT), 1, 0, 'C', $fill);
+                
+                // SERVICIO
+                $pdf->Rect($x + $anchoItemServ, $y, $anchoServicio, $altura, $fill ? 'FD' : 'D');
+                $pdf->SetXY($x + $anchoItemServ + 1, $y + 1);
+                $pdf->MultiCell($anchoServicio - 2, 4, $servicio, 0, 'L');
+                
+                // OBSERVACIONES
+                $pdf->Rect($x + $anchoItemServ + $anchoServicio, $y, $anchoObservaciones, $altura, $fill ? 'FD' : 'D');
+                $pdf->SetXY($x + $anchoItemServ + $anchoServicio + 1, $y + 1);
+                $pdf->MultiCell($anchoObservaciones - 2, 4, $observaciones, 0, 'L');
+                
+                // Posicionar para siguiente fila
+                $pdf->SetXY($x, $y + $altura);
+            }
+        } else {
+            // Mostrar mensaje si no hay servicios
+            $pdf->SetFillColor(255, 255, 255);
+            $pdf->Cell(195, 6, $this->decodeUtf8('No se realizaron servicios'), 1, 1, 'C');
         }
         
-        // ============ PARTES DE REPARACIÓN ============
+        // ============ PRODUCTOS ============
         $pdf->Ln(5);
         $pdf->SetFont('arial','B',10);
         $pdf->SetTextColor(52, 73, 94);
-        $pdf->Cell(195, 6, $this->decodeUtf8('PARTES DE REPARACIÓN'),0,1,'C',false);
+        $pdf->Cell(195, 6, $this->decodeUtf8('REPUESTOS'),0,1,'C',false);
         $pdf->Ln(1);
+        
+        // Definir anchos de columnas
+        $anchoItem = 9;
+        $anchoProducto = 165;
+        $anchoCantidad = 21;
         
         $pdf->SetFillColor(52, 73, 94);
         $pdf->SetTextColor(255, 255, 255);
         $pdf->SetFont('arial','B',8);
-        $pdf->Cell(9, 6, $this->decodeUtf8('ITEM'), 1, 0, 'C', true);
-        $pdf->Cell(165, 6, $this->decodeUtf8('PRODUCTO'), 1, 0, 'C', true);
-        $pdf->Cell(21, 6, $this->decodeUtf8('CANTIDAD'), 1, 1, 'C', true);
+        $pdf->Cell($anchoItem, 6, $this->decodeUtf8('ITEM'), 1, 0, 'C', true);
+        $pdf->Cell($anchoProducto, 6, $this->decodeUtf8('PRODUCTO'), 1, 0, 'C', true);
+        $pdf->Cell($anchoCantidad, 6, $this->decodeUtf8('CANTIDAD'), 1, 1, 'C', true);
         
         $pdf->SetFont('Helvetica','',8);
         $pdf->SetTextColor(0, 0, 0);
         
-        foreach ($order->articles as $k => $value) {
-            $fill = ($k % 2 == 0);
-            $pdf->SetFillColor($fill ? 245 : 255, $fill ? 245 : 255, $fill ? 245 : 255);
-            
-            $pdf->SetWidths(array(9, 165, 21));
-            $pdf->Row(
-                array(
-                    str_pad(($k+1), 2, '0', 0),
-                    $this->decodeUtf8($value->description),
-                    $this->decodeUtf8($value->pivot->quantity)
-                ),
-                array('C','L','C'),
-                1,
-                'Y',
-                array($fill ? 1 : 0, $fill ? 1 : 0, $fill ? 1 : 0),
-                3
-            );
+        // Verificar si hay productos
+        if(count($order->articles) > 0) {
+            foreach ($order->articles as $k => $value) {
+                $fill = ($k % 2 == 0);
+                $pdf->SetFillColor($fill ? 245 : 255, $fill ? 245 : 255, $fill ? 245 : 255);
+                
+                // Calcular altura necesaria para el texto
+                $descripcion = $this->decodeUtf8($value->description);
+                $pdf->SetFont('Helvetica','',8);
+                
+                // Obtener número de líneas necesarias
+                $nb = 0;
+                $textWidth = $anchoProducto - 2; // Restar márgenes internos
+                $length = strlen($descripcion);
+                if($length > 0) {
+                    $nb = ceil($pdf->GetStringWidth($descripcion) / $textWidth);
+                }
+                $altura = max(6, $nb * 5); // Mínimo 6mm de altura
+                
+                // Dibujar celdas manualmente
+                $x = $pdf->GetX();
+                $y = $pdf->GetY();
+                
+                // ITEM
+                $pdf->Cell($anchoItem, $altura, str_pad(($k+1), 2, '0', STR_PAD_LEFT), 1, 0, 'C', $fill);
+                
+                // PRODUCTO (con MultiCell simulado)
+                $pdf->Rect($x + $anchoItem, $y, $anchoProducto, $altura, $fill ? 'FD' : 'D');
+                $pdf->SetXY($x + $anchoItem + 1, $y + 1);
+                $pdf->MultiCell($anchoProducto - 2, 4, $descripcion, 0, 'L');
+                
+                // CANTIDAD
+                $pdf->SetXY($x + $anchoItem + $anchoProducto, $y);
+                $pdf->Cell($anchoCantidad, $altura, $this->decodeUtf8($value->pivot->quantity), 1, 1, 'C', $fill);
+            }
+        } else {
+            // Mostrar mensaje si no hay productos
+            $pdf->SetFillColor(255, 255, 255);
+            $pdf->Cell(195, 6, $this->decodeUtf8('No se utilizaron repuestos'), 1, 1, 'C');
         }
         
         // ============ OBSERVACIONES Y REQUERIMIENTOS ============
-        $pdf->Ln(4);
-        $pdf->SetFillColor(255, 243, 224);
-        $pdf->RoundedRect(7, $pdf->GetY(), 195, 0, 1.5, 'F');
+        $pdf->Ln(5);
         
         $pdf->SetFont('Arial','B',8);
         $pdf->SetTextColor(52, 73, 94);
@@ -273,67 +330,18 @@ class RepairOrderPrintAction{
         $pdf->SetTextColor(0, 0, 0);
         $pdf->MultiCell(170, 5, $this->decodeUtf8($order->observations), 0, 'L');
         
-        // ============ NOTA IMPORTANTE ============
-        $pdf->Ln(3);
-        $pdf->SetFillColor(255, 243, 224);
-        $pdf->RoundedRect(7, $pdf->GetY(), 195, 0, 1.5, 'F');
-        
-        $pdf->SetFont('Arial','B',8);
-        $pdf->SetTextColor(231, 76, 60);
-        $pdf->Cell(195, 5, $this->decodeUtf8('NOTA IMPORTANTE'), 0, 1, 'L');
-        
-        $pdf->SetFont('Arial','',7.5);
-        $pdf->SetTextColor(0, 0, 0);
-        $nota = "Una vez recibida la cotización, el cliente tiene un plazo de 48 horas para confirmar o no la ejecución del trabajo. De manera similar, una vez culminado el trabajo de mantenimiento y/o reparación, el cliente tendrá el mismo plazo para pagar por el servicio, y 7 días calendario para recoger su vehículo. En caso contrario, si el cliente no cumple con el plazo estipulado para el recojo, deberá pagar un monto de S/ 3.00 por día de guardianía.";
-        $pdf->MultiCell(195, 4, $this->decodeUtf8($nota), 0, 'J');
-        
-        // ============ FIRMAS ============
-        $pdf->SetY(-70);
-        $pdf->Ln(5);
-        
-        $firmaCliente = public_path('storage/'.$order->signature);
-        $firmaTecnico = public_path('storage/'.$order->signature);
-        
-        // Líneas para firmas
-        $pdf->SetDrawColor(52, 73, 94);
-        $pdf->SetLineWidth(0.5);
-        $yFirma = $pdf->GetY() + 20;
-        $pdf->Line(40, $yFirma, 90, $yFirma);
-        $pdf->Line(140, $yFirma, 190, $yFirma);
-        
-        // Imágenes de firmas
-        if(file_exists($firmaCliente)) {
-            $pdf->Image($firmaCliente, 45, $pdf->GetY(), 40, 18);
-        }
-        if(file_exists($firmaTecnico)) {
-            $pdf->Image($firmaTecnico, 145, $pdf->GetY(), 40, 18);
-        }
-        
-        $pdf->SetY($yFirma + 2);
-        
-        // Etiquetas de firmas
-        $pdf->SetFont('Arial', 'B', 9);
-        $pdf->SetTextColor(52, 73, 94);
-        $pdf->Cell(95, 5, $this->decodeUtf8('FIRMA DEL CLIENTE'), 0, 0, 'C');
-        $pdf->Cell(95, 5, $this->decodeUtf8('FIRMA DEL TÉCNICO'), 0, 1, 'C');
-        
-        $pdf->SetFont('Arial', '', 7);
-        $pdf->SetTextColor(100, 100, 100);
-        $pdf->Cell(95, 4, $this->decodeUtf8($order->customer->full_names), 0, 0, 'C');
-        $pdf->Cell(95, 4, $this->decodeUtf8('Técnico Responsable'), 0, 1, 'C');
-        
         // ============ PÁGINA DE INSPECCIÓN ============
         $pdf->AddPage();
         
-        // Banner superior
+        // Banner superior más delgado
         $pdf->SetFillColor(52, 73, 94);
-        $pdf->Rect(0, 10, 210, 15, 'F');
+        $pdf->Rect(0, 10, 210, 10, 'F');
         $pdf->SetTextColor(255, 255, 255);
-        $pdf->SetFont('Arial', 'B', 14);
-        $pdf->SetXY(10, 15);
-        $pdf->Cell(190, 8, $this->decodeUtf8('REPORTE DE INSPECCIÓN'), 0, 1, 'C');
+        $pdf->SetFont('Arial', 'B', 12);
+        $pdf->SetXY(10, 13);
+        $pdf->Cell(190, 5, $this->decodeUtf8('REPORTE DE INSPECCIÓN'), 0, 1, 'C');
         
-        $pdf->Ln(5);
+        $pdf->Ln(3);
         
         // Encabezado de tabla de inspección
         $pdf->SetFont('Arial', 'B', 9);
@@ -357,8 +365,8 @@ class RepairOrderPrintAction{
             $pdf->SetFont('Arial', 'B', 12);
             // Estado con colores y símbolos compatibles
             if($inspection->status == 'good') {
-                $pdf->SetFillColor($fill ? 200 : 220, $fill ? 240 : 250, $fill ? 200 : 220); // Verde claro
-                $pdf->SetTextColor(39, 174, 96); // Verde
+                $pdf->SetFillColor($fill ? 200 : 220, $fill ? 240 : 250, $fill ? 200 : 220);
+                $pdf->SetTextColor(39, 174, 96);
                 $pdf->Cell(35, 6, 'X', 1, 0, 'C', true);
                 $pdf->SetFillColor($fill ? 245 : 255, $fill ? 245 : 255, $fill ? 245 : 255);
                 $pdf->SetTextColor(0, 0, 0);
@@ -366,8 +374,8 @@ class RepairOrderPrintAction{
                 $pdf->Cell(40, 6, '', 1, 1, 'C', $fill);
             } elseif($inspection->status == 'needs_repair') {
                 $pdf->Cell(35, 6, '', 1, 0, 'C', $fill);
-                $pdf->SetFillColor($fill ? 255 : 255, $fill ? 245 : 250, $fill ? 200 : 220); // Amarillo claro
-                $pdf->SetTextColor(243, 156, 18); // Naranja
+                $pdf->SetFillColor($fill ? 255 : 255, $fill ? 245 : 250, $fill ? 200 : 220);
+                $pdf->SetTextColor(243, 156, 18);
                 $pdf->Cell(40, 6, 'X', 1, 0, 'C', true);
                 $pdf->SetFillColor($fill ? 245 : 255, $fill ? 245 : 255, $fill ? 245 : 255);
                 $pdf->SetTextColor(0, 0, 0);
@@ -375,8 +383,8 @@ class RepairOrderPrintAction{
             } else {
                 $pdf->Cell(35, 6, '', 1, 0, 'C', $fill);
                 $pdf->Cell(40, 6, '', 1, 0, 'C', $fill);
-                $pdf->SetFillColor($fill ? 255 : 255, $fill ? 220 : 230, $fill ? 220 : 230); // Rojo claro
-                $pdf->SetTextColor(231, 76, 60); // Rojo
+                $pdf->SetFillColor($fill ? 255 : 255, $fill ? 220 : 230, $fill ? 220 : 230);
+                $pdf->SetTextColor(231, 76, 60);
                 $pdf->Cell(40, 6, 'X', 1, 1, 'C', true);
                 $pdf->SetTextColor(0, 0, 0);
             }
@@ -386,20 +394,20 @@ class RepairOrderPrintAction{
         if(count($order->images) > 0) {
             $pdf->AddPage();
             
-            // Banner superior para anexos
+            // Banner superior más delgado para anexos
             $pdf->SetFillColor(52, 73, 94);
-            $pdf->Rect(0, 10, 210, 15, 'F');
+            $pdf->Rect(0, 10, 210, 10, 'F');
             $pdf->SetTextColor(255, 255, 255);
-            $pdf->SetFont('Arial', 'B', 14);
-            $pdf->SetXY(10, 15);
-            $pdf->Cell(190, 8, $this->decodeUtf8('ANEXOS FOTOGRÁFICOS'), 0, 1, 'C');
+            $pdf->SetFont('Arial', 'B', 12);
+            $pdf->SetXY(10, 13);
+            $pdf->Cell(190, 5, $this->decodeUtf8('ANEXOS FOTOGRÁFICOS'), 0, 1, 'C');
             
             // Grid de imágenes profesional
             $imagesPerRow = 2;
             $imageWidth = 85;
             $imageHeight = 65;
             $marginX = 15;
-            $marginY = 35;
+            $marginY = 25; // Reducido para aprovechar espacio del header más pequeño
             $spacingX = 10;
             $spacingY = 15;
             
@@ -432,10 +440,6 @@ class RepairOrderPrintAction{
                         $imageCount = 0;
                     }
                     
-                    // Sombra sutil
-                    // $pdf->SetFillColor(220, 220, 220);
-                    // $pdf->RoundedRect($xPos + 1, $yPos + 1, $imageWidth, $imageHeight + 10, 2, 'F');
-                    
                     // Contenedor blanco
                     $pdf->SetFillColor(255, 255, 255);
                     $pdf->SetDrawColor(200, 200, 200);
@@ -467,6 +471,77 @@ class RepairOrderPrintAction{
                 }
             }
         }
+        
+        // ============ FIRMAS (AL FINAL DEL DOCUMENTO) ============
+        // Verificar si hay espacio suficiente para las firmas (aproximadamente 35mm necesarios)
+        $espacioNecesarioFirmas = 35;
+        $espacioDisponible = 297 - 25 - $pdf->GetY(); // 297mm altura A4 - margen inferior - posición actual
+        
+        if ($espacioDisponible < $espacioNecesarioFirmas) {
+            $pdf->AddPage();
+            $pdf->Ln(10);
+        } else {
+            $pdf->Ln(8);
+        }
+        
+        $firmaCliente = public_path('storage/'.$order->signature);
+        $firmaTecnico = public_path('storage/'.$order->signature);
+        
+        // Guardar posición Y para las firmas
+        $yInicio = $pdf->GetY();
+        
+        // Líneas para firmas
+        $pdf->SetDrawColor(52, 73, 94);
+        $pdf->SetLineWidth(0.5);
+        $yFirma = $yInicio + 20;
+        $pdf->Line(40, $yFirma, 90, $yFirma);
+        $pdf->Line(140, $yFirma, 190, $yFirma);
+        
+        // Imágenes de firmas
+        if(file_exists($firmaCliente)) {
+            $pdf->Image($firmaCliente, 45, $yInicio, 40, 18);
+        }
+        if(file_exists($firmaTecnico)) {
+            $pdf->Image($firmaTecnico, 145, $yInicio, 40, 18);
+        }
+        
+        $pdf->SetY($yFirma + 2);
+        
+        // Etiquetas de firmas
+        $pdf->SetFont('Arial', 'B', 9);
+        $pdf->SetTextColor(52, 73, 94);
+        $pdf->Cell(95, 5, $this->decodeUtf8('FIRMA DEL CLIENTE'), 0, 0, 'C');
+        $pdf->Cell(95, 5, $this->decodeUtf8('FIRMA DEL TÉCNICO'), 0, 1, 'C');
+        
+        $pdf->SetFont('Arial', '', 7);
+        $pdf->SetTextColor(100, 100, 100);
+        $pdf->Cell(95, 4, $this->decodeUtf8($order->customer->full_names), 0, 0, 'C');
+        $pdf->Cell(95, 4, $this->decodeUtf8('Técnico Responsable'), 0, 1, 'C');
+        
+        // ============ NOTA IMPORTANTE (AL FINAL DEL DOCUMENTO) ============
+        // Verificar espacio disponible para la nota
+        $espacioNecesarioNota = 25;
+        $espacioDisponible = 297 - 25 - $pdf->GetY();
+        
+        if ($espacioDisponible < $espacioNecesarioNota) {
+            $pdf->AddPage();
+            $pdf->Ln(5);
+        } else {
+            $pdf->Ln(5);
+        }
+        
+        $pdf->SetFillColor(255, 243, 224);
+        $yNota = $pdf->GetY();
+        $pdf->RoundedRect(7, $yNota, 195, 20, 1.5, 'F');
+        
+        $pdf->SetFont('Arial','B',8);
+        $pdf->SetTextColor(231, 76, 60);
+        $pdf->Cell(195, 5, $this->decodeUtf8('NOTA IMPORTANTE'), 0, 1, 'L');
+        
+        $pdf->SetFont('Arial','',7.5);
+        $pdf->SetTextColor(0, 0, 0);
+        $nota = "Una vez recibida la cotización, el cliente tiene un plazo de 48 horas para confirmar o no la ejecución del trabajo. De manera similar, una vez culminado el trabajo de mantenimiento y/o reparación, el cliente tendrá el mismo plazo para pagar por el servicio, y 7 días calendario para recoger su vehículo. En caso contrario, si el cliente no cumple con el plazo estipulado para el recojo, deberá pagar un monto de S/ 3.00 por día de guardianía.";
+        $pdf->MultiCell(195, 4, $this->decodeUtf8($nota), 0, 'J');
         
         $pdf->Output('Orden_Reparacion_'.$order->correlative.'.pdf','I');
     }

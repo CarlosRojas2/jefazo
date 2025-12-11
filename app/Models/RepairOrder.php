@@ -9,7 +9,9 @@ class RepairOrder extends Model{
         'correlative',
         'problem',
         'observations',
-        'status'
+        'status',
+        'signature',
+        'total'
     ];
 
     public function images(){
@@ -18,13 +20,13 @@ class RepairOrder extends Model{
 
     public function services(){
         return $this->belongsToMany(Service::class, 'repair_order_services')
-        ->withPivot('observations')
+        ->withPivot('observations', 'price')
         ->withTimestamps();
     }
 
     public function articles(){
         return $this->belongsToMany(Article::class, 'repair_order_articles')
-        ->withPivot('quantity')
+        ->withPivot('quantity', 'price')
         ->withTimestamps();
     }
 

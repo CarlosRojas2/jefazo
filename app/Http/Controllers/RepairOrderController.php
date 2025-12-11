@@ -1,5 +1,6 @@
 <?php
 namespace App\Http\Controllers;
+use App\Actions\Pdfs\RepairOrderMpdfAction;
 use App\Actions\Pdfs\RepairOrderPrintAction;
 use App\Actions\RepairOrderStoreAction;
 use App\Models\Image;
@@ -38,6 +39,7 @@ class RepairOrderController extends Controller{
             ],
             'vehicle_id' => 'required|numeric',
             'problem' => 'required|string',
+            'observations' => 'nullable|string'
         ]);
         return DB::transaction(function() use ($request,$store){
             $store->execute($request->all());
@@ -129,6 +131,18 @@ class RepairOrderController extends Controller{
     }
 
     public function diagnose(Request $request,RepairOrderStoreAction $store){
+        $validated = $request->validate([
+            'id' => 'required|exists:repair_orders,id',
+            'status' => 'required|in:REVISADO',
+            'services' => 'required|array',
+            'services.*.id' => 'required|exists:services,id',
+            'services.*.price' => 'required|numeric|min:0',
+            'services.*.observations' => 'nullable|string',
+            'articles' => 'required|array',
+            'articles.*.id' => 'required|exists:articles,id',
+            'articles.*.quantity' => 'required|numeric|min:1',
+            'articles.*.price' => 'required|numeric|min:0',
+        ]);
         return DB::transaction(function() use ($request,$store){
             $store->diagnose($request->all());
             return redirect()->route("repair_orders.index");
