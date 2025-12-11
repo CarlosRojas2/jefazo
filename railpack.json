@@ -1,0 +1,7 @@
+{
+  "steps": {
+    "install:composer": {
+      "command": "composer install --optimize-autoloader --no-scripts --no-interaction --ignore-platform-req=ext-bcmath"
+    }
+  }
+}
