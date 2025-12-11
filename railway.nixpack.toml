@@ -1,8 +1,0 @@
-[phases.setup]
-commands = []
-
-[phases.install]
-commands = []
-
-[phases.build]
-commands = []
