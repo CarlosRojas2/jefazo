@@ -1,9 +1,22 @@
 [build]
 builder = "railpack"
-pkgExtensions = ["bcmath"]
-buildCommand = "composer install --no-dev --optimize-autoloader --ignore-platform-reqs && pnpm install --frozen-lockfile && pnpm run build"
+
+# Extensiones PHP
+[build.php]
+extensions = ["bcmath"]
+
+# Node para compilar Vite
+[build.node]
+version = "18"
+packageManager = "pnpm"
+
+# Comandos de compilación
+[build.commands]
+php = "composer install --no-dev --optimize-autoloader"
+node = "pnpm install --frozen-lockfile && pnpm run build"
 
 [deploy]
-startCommand = "php artisan config:cache && php artisan route:cache && php artisan view:cache && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT"
+# Caddy + PHP-FPM ya sirven el sitio automáticamente
+startCommand = "php artisan migrate --force"
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 10
