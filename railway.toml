@@ -1,13 +1,29 @@
 [build]
 builder = "railpack"
-pkgExtensions = ["bcmath", "gd", "zip"]
 
-env = { PNPM_VERSION = "9.12.3" }
+phpExtensions = [
+  "bcmath",
+  "ctype",
+  "curl",
+  "dom",
+  "fileinfo",
+  "filter",
+  "hash",
+  "mbstring",
+  "openssl",
+  "pcre",
+  "pdo",
+  "session",
+  "tokenizer",
+  "xml",
+  "pdo_pgsql",
+  "redis"
+]
 
 buildCommand = """
 corepack enable
 corepack prepare pnpm@9.12.3 --activate
-composer install --no-dev --optimize-autoloader --ignore-platform-reqs
+composer install --no-dev --optimize-autoloader --ignore-platform-req=ext-bcmath
 pnpm install --frozen-lockfile
 pnpm run build
 """
