@@ -1,7 +1,6 @@
 [build]
 builder = "railpack"
 
-# Forzar extensiones PHP que necesitas (incluye bcmath)
 phpExtensions = [
   "bcmath",
   "ctype",
@@ -14,19 +13,16 @@ phpExtensions = [
   "openssl",
   "pcre",
   "pdo",
+  "pdo_pgsql",
   "session",
   "tokenizer",
   "xml",
-  "pdo_pgsql",
+  "zip",
+  "gd",
   "redis"
 ]
 
-# Si quieres forzar versión de pnpm estable:
-env = { PNPM_VERSION = "9.12.3" }
-
 buildCommand = """
-corepack enable
-corepack prepare pnpm@9.12.3 --activate
 composer install --no-dev --optimize-autoloader --ignore-platform-req=ext-bcmath
 pnpm install --frozen-lockfile
 pnpm run build
@@ -34,7 +30,6 @@ pnpm run build
 
 [deploy]
 startCommand = """
-php artisan config:clear &&
 php artisan migrate --force &&
 php artisan storage:link &&
 php artisan config:cache &&
