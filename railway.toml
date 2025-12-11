@@ -1,8 +1,12 @@
 [build]
 builder = "railpack"
 pkgExtensions = ["bcmath", "gd", "zip"]
+
+env = { PNPM_VERSION = "9.12.3" }
+
 buildCommand = """
 corepack enable
+corepack prepare pnpm@9.12.3 --activate
 composer install --no-dev --optimize-autoloader --ignore-platform-reqs
 pnpm install --frozen-lockfile
 pnpm run build
