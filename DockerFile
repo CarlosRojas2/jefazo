@@ -1,10 +1,9 @@
 # -----------------------------------------------------------
-# STAGE 1: Build (Instalación y Compilación)
+# STAGE 1: Build y Runtime
 # -----------------------------------------------------------
-# Usamos una imagen base con PHP-FPM (estándar, basada en Debian)
 FROM php:8.2-fpm AS base
 
-# 1. Instalar dependencias del sistema y Tini
+# 1. Instalar dependencias de sistema y extensiones (bcmath, gd, etc.)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     curl \
@@ -14,8 +13,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
     zip \
     unzip \
-    # Instalar Tini (para gestionar la señal de apagado, aunque usemos un proceso)
     tini \
+    nodejs \
+    npm \
+    # Instalar NodeSource manualmente ya que el RUN curl... falló en el log.
+    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # 2. Instalar extensiones de PHP (Solución bcmath/gd)
@@ -25,37 +28,29 @@ RUN docker-php-ext-install pdo_pgsql pgsql mbstring exif pcntl bcmath gd opcache
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www
 
-# Copiar archivos esenciales para Composer y Node
-COPY composer.json composer.lock package.json pnpm-lock.yaml ./
+# COPIAR TODOS LOS ARCHIVOS DEL PROYECTO AQUÍ (ANTES DE COMPOSER Y VITE)
+COPY . .
 
 # 4. Instalar dependencias de Composer
 RUN composer install --optimize-autoloader --no-dev --no-scripts --no-interaction
 
-# 5. Instalar Node y Compilar Assets (Vite/React)
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get install -y nodejs \
-    && npm install -g pnpm \
+# 5. Instalar Node (pnpm) y Compilar Assets (Vite/React)
+RUN npm install -g pnpm \
     && pnpm install \
-    && pnpm run build
+    && pnpm run build  # <-- ¡Esto ahora funcionará porque los archivos ya están copiados!
 
-# -----------------------------------------------------------
-# STAGE 2: Runtime (Entorno de Ejecución Final)
-# -----------------------------------------------------------
-FROM base
-
-# Copiar el código fuente y los assets compilados
-COPY . .
-
-# Dar permisos
+# 6. Dar permisos
 RUN chown -R www-data:www-data /var/www \
     && chmod -R 775 /var/www/storage \
     && chmod -R 775 /var/www/bootstrap/cache
 
+# -----------------------------------------------------------
+# STAGE 2: Runtime Command
+# -----------------------------------------------------------
 # Exponer el puerto
 EXPOSE 8000
 
 # Comando de Inicio: Ejecuta comandos de Deploy y luego inicia el servidor web de Laravel
-# Este comando es un único proceso que escuchará el tráfico en el puerto de Railway ($PORT)
 CMD php artisan migrate --force && \
     php artisan config:cache && \
     php artisan route:cache && \
