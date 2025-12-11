@@ -1,7 +1,11 @@
-FROM php:8.2-fpm
+# -----------------------------------------------------------
+# STAGE 1: Build (Instalación y Compilación)
+# -----------------------------------------------------------
+# Usamos una imagen base con PHP-FPM (estándar, basada en Debian)
+FROM php:8.2-fpm AS base
 
-# Instalar dependencias del sistema
-RUN apt-get update && apt-get install -y \
+# 1. Instalar dependencias del sistema y Tini
+RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     curl \
     libpng-dev \
@@ -10,38 +14,50 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     zip \
     unzip \
-    nginx
+    # Instalar Tini (para gestionar la señal de apagado, aunque usemos un proceso)
+    tini \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Instalar extensiones de PHP (incluyendo pgsql y pdo_pgsql)
-RUN docker-php-ext-install pdo_pgsql pgsql mbstring exif pcntl bcmath gd
+# 2. Instalar extensiones de PHP (Solución bcmath/gd)
+RUN docker-php-ext-install pdo_pgsql pgsql mbstring exif pcntl bcmath gd opcache
 
-# Instalar Composer
+# 3. Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-# Configurar directorio de trabajo
 WORKDIR /var/www
 
-# Copiar archivos del proyecto
-COPY . .
+# Copiar archivos esenciales para Composer y Node
+COPY composer.json composer.lock package.json pnpm-lock.yaml ./
 
-# Instalar dependencias de Composer
+# 4. Instalar dependencias de Composer
 RUN composer install --optimize-autoloader --no-dev --no-scripts --no-interaction
+
+# 5. Instalar Node y Compilar Assets (Vite/React)
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
+    && npm install -g pnpm \
+    && pnpm install \
+    && pnpm run build
+
+# -----------------------------------------------------------
+# STAGE 2: Runtime (Entorno de Ejecución Final)
+# -----------------------------------------------------------
+FROM base
+
+# Copiar el código fuente y los assets compilados
+COPY . .
 
 # Dar permisos
 RUN chown -R www-data:www-data /var/www \
-    && chmod -R 755 /var/www/storage \
-    && chmod -R 755 /var/www/bootstrap/cache
+    && chmod -R 775 /var/www/storage \
+    && chmod -R 775 /var/www/bootstrap/cache
 
-# Configurar Nginx
-COPY nginx.conf /etc/nginx/nginx.conf
+# Exponer el puerto
+EXPOSE 8000
 
-# Exponer puerto
-EXPOSE 8080
-
-# Script de inicio
+# Comando de Inicio: Ejecuta comandos de Deploy y luego inicia el servidor web de Laravel
+# Este comando es un único proceso que escuchará el tráfico en el puerto de Railway ($PORT)
 CMD php artisan migrate --force && \
     php artisan config:cache && \
     php artisan route:cache && \
     php artisan view:cache && \
-    php-fpm -D && \
-    nginx -g 'daemon off;'
+    php artisan serve --host=0.0.0.0 --port=$PORT
