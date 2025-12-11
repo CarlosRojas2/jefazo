@@ -3,11 +3,7 @@
   "build": {
     "builder": "RAILPACK",
     "railpackBuildPhase": {
-      "phpExtensions": [
-        "bcmath",
-        "gd",
-        "zip"
-      ]
+      "composerInstallCommand": "composer install --no-dev --optimize-autoloader --ignore-platform-reqs --no-scripts"
     }
   },
   "deploy": {
