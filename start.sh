@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# --- 1. LIMPIEZA FORZADA DE CACHÉ ---
+echo "--- Limpiando caché de Laravel ---"
+# Limpiar configuración, rutas y vistas (importante para que se lean las nuevas variables)
+php artisan config:clear
+php artisan route:clear
+php artisan view:clear
+
 # 1. EJECUCIÓN DE COMANDOS DE DEPLOY/MIGRACIÓN
 echo "--- Ejecutando comandos de Laravel ---"
 php artisan config:clear
