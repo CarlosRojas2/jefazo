@@ -1,23 +1,6 @@
 FROM php:8.2-fpm
 
-# Instalar dependencias del sistema
-RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    libpq-dev \
-    zip \
-    unzip \
-    nginx \
-    procps
-
-# Instalar extensiones de PHP (incluye bcmath para tu proyecto)
-RUN docker-php-ext-install pdo_pgsql pgsql mbstring exif pcntl bcmath gd
-
-# Instalar Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# ... (Instalación de dependencias y extensiones) ...
 
 # Configurar directorio de trabajo
 WORKDIR /var/www
@@ -25,18 +8,13 @@ WORKDIR /var/www
 # Copiar archivos del proyecto
 COPY . .
 
-# Instalar dependencias de Composer
-RUN composer install --optimize-autoloader --no-dev --no-scripts --no-interaction
+# Copiar configuración de PHP-FPM (¡Paso crucial!)
+COPY www.conf /etc/php/8.2/fpm/pool.d/www.conf 
 
-# Dar permisos a Laravel
-RUN chown -R www-data:www-data /var/www \
-    && chmod -R 755 /var/www/storage \
-    && chmod -R 755 /var/www/bootstrap/cache
+# ... (Instalar dependencias de Composer) ...
 
-# Copiar configuración de Nginx
+# Copiar configuración de Nginx y script de inicio
 COPY nginx.conf /etc/nginx/nginx.conf
-
-# Copiar y dar permisos al script de inicio
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
 

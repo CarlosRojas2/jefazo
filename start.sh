@@ -1,32 +1,20 @@
 #!/bin/bash
-# Ejecutar migraciones y optimizaciones
+
+# 1. EJECUCIÓN DE COMANDOS DE DEPLOY/MIGRACIÓN
+echo "--- Ejecutando comandos de Laravel ---"
+php artisan config:clear
 php artisan migrate --force
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
-# Iniciar PHP-FPM en background
+# 2. INICIO DE PROCESOS SIMULTÁNEOS
+echo "--- Iniciando PHP-FPM y Nginx ---"
+# Iniciar PHP-FPM en background (Ahora escuchará en 127.0.0.1:9000)
 php-fpm -D
 
-# Esperar que PHP-FPM inicie completamente
+# Pequeña espera para asegurar que PHP-FPM inicie
 sleep 2
 
-echo "✅ PHP-FPM iniciado correctamente"
-
-# Iniciar Nginx en foreground (para que el contenedor no se detenga)
-echo "🚀 Iniciando Nginx..."
+# Iniciar Nginx en foreground (Este es el proceso principal del contenedor)
 exec nginx -g "daemon off;"
-```
-
----
-
-## Resumen:
-```
-tu-proyecto/
-├── Dockerfile          ← Construye el contenedor
-├── nginx.conf          ← Configura el servidor web
-├── start.sh            ← Script de inicio
-├── composer.json
-├── package.json
-├── .env (NO lo subas a Git)
-└── ... (resto de archivos Laravel)
