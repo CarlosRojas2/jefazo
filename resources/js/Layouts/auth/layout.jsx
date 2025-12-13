@@ -65,7 +65,7 @@ export function AuthLayout({ sx, children, header }) {
                 backgroundSize: 'cover',
                 backgroundRepeat: 'no-repeat',
                 backgroundPosition: 'center center',
-                backgroundImage: `url(storage/assets/background/login.png)`,
+                backgroundImage: `url(/assets/background/login.png)`,
                 [stylesMode.dark]: { opacity: 0.08 },
                 },
                 ...sx

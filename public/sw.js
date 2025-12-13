@@ -8,7 +8,7 @@ const PRECACHE_URLS = [
   '/index.php',
   '/manifest.json',
   '/favicon.ico',
-  '/icons/icon-192.svg',
+  '/icons/logo-single.svg',
   '/icons/icon-512.svg'
 ];
 
