@@ -32,7 +32,7 @@ const Dashboard = ()=>{
                         }}
                     >
                         <Box sx={{ width: 48, height: 48, mb: 3 }}>
-                            <img alt="icon" src="/storage/assets/icons/glass/ic-glass-users.svg" />
+                            <img alt="icon" src="/assets/icons/glass/ic-glass-users.svg" />
                         </Box>
 
                         <Box
