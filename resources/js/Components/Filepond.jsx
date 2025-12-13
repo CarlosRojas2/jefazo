@@ -117,8 +117,7 @@ export default function Filepond({ vehicle, images, handleSet, handleRemove }) {
     const load = (source, load, error, progress, abort, headers) => {
         console.log('Load llamado con source:', source);
         
-        const imageUrl = source.startsWith('http') ? source : '/storage/' + source;
-        console.log('URL de imagen:', imageUrl);
+        const imageUrl = source;
         
         fetch(imageUrl)
             .then((response) => {
