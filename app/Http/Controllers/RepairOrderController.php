@@ -1,7 +1,5 @@
 <?php
 namespace App\Http\Controllers;
-
-use App\Actions\Pdfs\RepairOrderMpdfAction;
 use App\Actions\Pdfs\RepairOrderPrintAction;
 use App\Actions\RepairOrderStoreAction;
 use App\Models\Image;
@@ -13,7 +11,6 @@ use App\Services\DataTable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Inertia\Inertia;
 
 class RepairOrderController extends Controller{
@@ -67,115 +64,74 @@ class RepairOrderController extends Controller{
         return response()->json($result);
     }
 
-    /**
-     * Upload - ADAPTADO PARA CLOUDINARY
-     */
-    public function upload(Request $request){
+
+    public function upload(Request $request) {
         $request->validate([
             'vehicle' => 'required',
-            'images' => 'required|image|mimes:jpeg,png,jpg,gif|max:10240',
+            'images' => 'required|image|max:10240',
         ]);
 
         $vehicle = Vehicle::findOrFail($request->vehicle);
-        $directory = 'annexes/' . $vehicle->plate; // Cloudinary usa folders
-        $image = $request->file('images');
-        
+        $file = $request->file('images');
+
+        // Definimos la ruta completa. Cloudinary creará las carpetas automáticamente.
+        $fullPath = 'annexes/' . $vehicle->plate;
+
         try {
-            // Subir a Cloudinary
-            $uploaded = Cloudinary::upload($image->getRealPath(), [
-                'folder' => $directory,
-                'resource_type' => 'image',
-                'quality' => 'auto',
-                'fetch_format' => 'auto'
-            ]);
-            
-            // Retornar la URL segura de Cloudinary
-            return $uploaded->getSecurePath();
-            
+            // IMPORTANTE: store() acepta la CARPETA como primer parámetro
+            // El driver de Cloudinary usará esto para crear el 'folder' en la nube
+            $path = $file->store($fullPath, 'cloudinary');
+
+            // Para obtener la URL que guardarás en la BD
+            $url = Storage::disk('cloudinary')->url($path);
+
+            return $url; 
+
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Error al subir imagen: ' . $e->getMessage()], 500);
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
-    /**
-     * Revert - ADAPTADO PARA CLOUDINARY
-     */
     public function revert(Request $request){
         try {
-            // FilePond envía el path (URL de Cloudinary) como texto plano
-            $url = $request->getContent();
+            // FilePond envía el path como texto plano en el body
+            $path = $request->getContent();
             
-            // Limpiar la URL
-            $url = trim($url);
-            $url = trim($url, '"\'');
+            // Limpiar el path de posibles comillas, espacios y caracteres extraños
+            $path = trim($path);
+            $path = trim($path, '"\'');
             
-            if (empty($url)) {
-                return response()->json(['error' => 'URL no proporcionada'], 400);
+            // Verificar que el path no esté vacío
+            if (empty($path)) {
+                return response()->json(['error' => 'Path no proporcionado'], 400);
             }
             
-            // Extraer el public_id de la URL de Cloudinary
-            $publicId = $this->extractPublicIdFromUrl($url);
-            
-            if ($publicId) {
-                // Eliminar de Cloudinary
-                Cloudinary::destroy($publicId);
+            // Eliminar el archivo del disco si existe
+            if (Storage::disk('cloudinary')->exists($path)) {
+                Storage::disk('cloudinary')->delete($path);
+            } else {
             }
             
             // Eliminar el registro de la base de datos si existe
-            $image = Image::where('path', $url)->first();
+            $image = Image::where('path', $path)->first();
             if ($image) {
                 $image->delete();
             }
             
-            return response('', 200);
+            return response('', 200); // FilePond espera respuesta vacía con código 200
             
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error al eliminar la imagen'], 500);
         }
     }
 
-    /**
-     * Delete Image - ADAPTADO PARA CLOUDINARY
-     */
     public function deleteImage(Request $request){
         $request->validate([
             'filename' => 'required|string',
         ]);
-        
-        try {
-            // Si filename es una URL completa de Cloudinary
-            if (filter_var($request->filename, FILTER_VALIDATE_URL)) {
-                $publicId = $this->extractPublicIdFromUrl($request->filename);
-            } else {
-                // Si es solo el path (formato antiguo)
-                $publicId = 'annexes/' . $request->filename;
-            }
-            
-            if ($publicId) {
-                Cloudinary::destroy($publicId);
-            }
-            
-            return response()->json(['status' => 'ok']);
-            
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Error al eliminar imagen'], 500);
-        }
-    }
-
-    /**
-     * Extraer public_id de una URL de Cloudinary
-     * Ejemplo URL: https://res.cloudinary.com/cloud_name/image/upload/v123456/annexes/ABC123/image.jpg
-     * Public ID: annexes/ABC123/image
-     */
-    private function extractPublicIdFromUrl(string $url): ?string{
-        // Remover el dominio y obtener solo el path
-        $pattern = '/\/upload\/(?:v\d+\/)?(.+)\.\w+$/';
-        
-        if (preg_match($pattern, $url, $matches)) {
-            return $matches[1];
-        }
-        
-        return null;
+        $path = 'annexes/' . $request->filename;
+        Storage::disk('cloudinary')->delete($path);
+        return response()->json(['status' => 'ok']);
     }
 
     public function show($id){
@@ -224,12 +180,15 @@ class RepairOrderController extends Controller{
     }
 
     public function generateInspection(Request $request){
+        // Obtener todas las partes del vehículo
         $vehicleParts = VehiclePart::all();
+        // Obtener inspecciones existentes de la orden de reparación
         $existingInspections = RepairOrderInspection::where('repair_order_id', $request->repair_order_id)
         ->pluck('id', 'vehicle_part_id');
-        
+        // Recorrer las partes del vehículo
         foreach ($vehicleParts as $part) {
             if (!isset($existingInspections[$part->id])) {
+                // Si no existe la inspección, se crea una nueva
                 RepairOrderInspection::create([
                     'repair_order_id' => $request->repair_order_id,
                     'vehicle_part_id' => $part->id,
@@ -237,8 +196,10 @@ class RepairOrderController extends Controller{
                     'observations' => '...',
                 ]);
             } else {
+                // Buscar si hay inspección en la petición para esta parte
                 foreach ($request->inspections as $inspection) {
                     if ($inspection['vehicle_part_id'] == $part->id) {
+                        // Actualizar el registro existente
                         RepairOrderInspection::where('repair_order_id', $request->repair_order_id)
                             ->where('vehicle_part_id', $part->id)
                             ->update([
@@ -249,6 +210,7 @@ class RepairOrderController extends Controller{
                 }
             }
         }
+
     }
 
     public function destroy(RepairOrder $repair_order){

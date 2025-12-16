@@ -417,11 +417,9 @@ class RepairOrderPrintAction{
             
             foreach ($order->images as $index => $image) {
                 $picture = public_path('storage/' . $image->path);
-                
                 if (file_exists($picture) && is_file($picture) && is_readable($picture)) {
                     list($originalWidth, $originalHeight) = getimagesize($picture);
                     $aspectRatio = $originalWidth / $originalHeight;
-                    
                     if ($aspectRatio > ($imageWidth / $imageHeight)) {
                         $newWidth = $imageWidth;
                         $newHeight = $imageWidth / $aspectRatio;
@@ -429,7 +427,6 @@ class RepairOrderPrintAction{
                         $newHeight = $imageHeight;
                         $newWidth = $imageHeight * $aspectRatio;
                     }
-                    
                     $xOffset = ($imageWidth - $newWidth) / 2;
                     $yOffset = ($imageHeight - $newHeight) / 2;
                     

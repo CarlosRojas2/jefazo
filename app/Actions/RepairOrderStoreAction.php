@@ -2,8 +2,7 @@
 namespace App\Actions;
 use App\Models\Image;
 use App\Models\RepairOrder;
-use Illuminate\Support\Facades\Storage;
-
+use Cloudinary\Api\Upload\UploadApi;
 class RepairOrderStoreAction{
     public function execute($attributes){
         $repair_order = RepairOrder::find($attributes['id']);
@@ -11,21 +10,22 @@ class RepairOrderStoreAction{
             $repair_order = new RepairOrder();
         }
         $this->fill($repair_order,$attributes);
-        if($attributes['id']<1){//solo cuando crea
-            $repair_order->correlative=$this->generateCorrelative();
-            // Decodificar la imagen base64
-            $signature = str_replace('data:image/png;base64,', '', $attributes['signature']);
-            $signature = str_replace(' ', '+', $signature);
-            $imageSignature = base64_decode($signature);
-            // Generar un nombre único para la imagen
-            $fileName = uniqid() . '.png';
-            Storage::disk('public')->put("signatures/{$fileName}",$imageSignature);
-            $repair_order->signature="signatures/{$fileName}";
+        if ($attributes['id'] < 1) {
+            $repair_order->correlative = $this->generateCorrelative();
+            $result = (new UploadApi())->upload(
+                $attributes['signature'], // base64 del canvas
+                [
+                    'folder' => 'signatures',
+                    'resource_type' => 'image',
+                ]
+            );
+            // Guarda el public_id
+            $repair_order->signature = $result['secure_url'];
         }
         $repair_order->save();
         $this->saveImages($repair_order,$attributes['images']);
         return $repair_order;
-    }
+    } 
 
     private function generateCorrelative(){
         // Bloquear la última fila con el mayor correlativo

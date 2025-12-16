@@ -336,7 +336,7 @@ export default function Form() {
                                                     <CardMedia
                                                         component="img"
                                                         height="200"
-                                                        image={'/storage/' + data.signature}
+                                                        image={data.signature}
                                                         alt="Firma del cliente"
                                                         sx={{ objectFit: 'contain', p: 2 }}
                                                     />
