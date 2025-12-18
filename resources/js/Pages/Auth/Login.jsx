@@ -82,6 +82,7 @@ export default function Login({ status, canResetPassword }) {
                         variant="contained"
                         onClick={submit}
                         disabled={processing}
+                        loading={processing}
                     >
                         Iniciar sesión
                     </LoadingButton>
