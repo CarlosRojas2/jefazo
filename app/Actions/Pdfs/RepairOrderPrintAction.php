@@ -178,15 +178,18 @@ class RepairOrderPrintAction{
         
         // ============ SERVICIOS REALIZADOS ============
         $pdf->Ln(5);
+        $pdf->SetX(7);
         $pdf->SetFont('arial','B',10);
         $pdf->SetTextColor(52, 73, 94);
         $pdf->Cell(195, 6, $this->decodeUtf8('SERVICIOS REALIZADOS'),0,1,'C',false);
         $pdf->Ln(2);
+        $pdf->SetX(7);
         
-        // Definir anchos de columnas
-        $anchoItemServ = 9;
-        $anchoServicio = 80;
-        $anchoObservaciones = 106;
+        // Definir anchos de columnas (total 195mm)
+        $anchoItemServ = 10;
+        $anchoServicio = 70;
+        $anchoObservaciones = 80;
+        $anchoPrecioServ = 35;
         
         // Header de tabla con fondo oscuro
         $pdf->SetFillColor(52, 73, 94);
@@ -194,11 +197,14 @@ class RepairOrderPrintAction{
         $pdf->SetFont('arial','B',8);
         $pdf->Cell($anchoItemServ, 6, $this->decodeUtf8('ITEM'), 1, 0, 'C', true);
         $pdf->Cell($anchoServicio, 6, $this->decodeUtf8('SERVICIO'), 1, 0, 'C', true);
-        $pdf->Cell($anchoObservaciones, 6, $this->decodeUtf8('OBSERVACIONES'), 1, 1, 'C', true);
+        $pdf->Cell($anchoObservaciones, 6, $this->decodeUtf8('OBSERVACIONES'), 1, 0, 'C', true);
+        $pdf->Cell($anchoPrecioServ, 6, $this->decodeUtf8('PRECIO'), 1, 1, 'C', true);
         
         // Contenido con filas alternadas
         $pdf->SetFont('Helvetica','',8);
         $pdf->SetTextColor(0, 0, 0);
+        
+        $totalServicios = 0;
         
         if(count($order->services) > 0) {
             foreach ($order->services as $k => $value) {
@@ -208,6 +214,9 @@ class RepairOrderPrintAction{
                 // Calcular altura necesaria para el texto
                 $servicio = $this->decodeUtf8($value->description);
                 $observaciones = $this->decodeUtf8($value->pivot->observations);
+                $precio = $value->pivot->price ?? 0;
+                $totalServicios += $precio;
+                
                 $pdf->SetFont('Helvetica','',8);
                 
                 // Calcular líneas necesarias para cada columna
@@ -221,13 +230,14 @@ class RepairOrderPrintAction{
                     $nbObservaciones = ceil($pdf->GetStringWidth($observaciones) / ($anchoObservaciones - 2));
                 }
                 
-                $altura = max(6, max($nbServicio, $nbObservaciones) * 4); // Altura dinámica
+                $altura = max(6, max($nbServicio, $nbObservaciones) * 4);
                 
-                // Dibujar celdas manualmente
-                $x = $pdf->GetX();
+                // Dibujar celdas manualmente con alineación en X=7
+                $x = 7;
                 $y = $pdf->GetY();
                 
                 // ITEM
+                $pdf->SetXY($x, $y);
                 $pdf->Cell($anchoItemServ, $altura, str_pad(($k+1), 2, '0', STR_PAD_LEFT), 1, 0, 'C', $fill);
                 
                 // SERVICIO
@@ -240,9 +250,22 @@ class RepairOrderPrintAction{
                 $pdf->SetXY($x + $anchoItemServ + $anchoServicio + 1, $y + 1);
                 $pdf->MultiCell($anchoObservaciones - 2, 4, $observaciones, 0, 'L');
                 
+                // PRECIO
+                $pdf->Rect($x + $anchoItemServ + $anchoServicio + $anchoObservaciones, $y, $anchoPrecioServ, $altura, $fill ? 'FD' : 'D');
+                $pdf->SetXY($x + $anchoItemServ + $anchoServicio + $anchoObservaciones + 1, $y + 1);
+                $pdf->Cell($anchoPrecioServ - 2, $altura - 2, 'S/ ' . number_format($precio, 2), 0, 1, 'C');
+                
                 // Posicionar para siguiente fila
                 $pdf->SetXY($x, $y + $altura);
             }
+            
+            // FILA DE TOTAL SERVICIOS
+            $pdf->SetX(7);
+            $pdf->SetFont('Arial', 'B', 9);
+            $pdf->SetFillColor(236, 240, 241);
+            $pdf->Cell($anchoItemServ + $anchoServicio + $anchoObservaciones, 6, $this->decodeUtf8('SUBTOTAL SERVICIOS'), 1, 0, 'R', true);
+            $pdf->Cell($anchoPrecioServ, 6, 'S/ ' . number_format($totalServicios, 2), 1, 1, 'C', true);
+            
         } else {
             // Mostrar mensaje si no hay servicios
             $pdf->SetFillColor(255, 255, 255);
@@ -251,27 +274,32 @@ class RepairOrderPrintAction{
         
         // ============ PRODUCTOS ============
         $pdf->Ln(5);
+        $pdf->SetX(7);
         $pdf->SetFont('arial','B',10);
         $pdf->SetTextColor(52, 73, 94);
         $pdf->Cell(195, 6, $this->decodeUtf8('REPUESTOS'),0,1,'C',false);
         $pdf->Ln(1);
+        $pdf->SetX(7);
         
-        // Definir anchos de columnas
-        $anchoItem = 9;
-        $anchoProducto = 165;
-        $anchoCantidad = 21;
+        // Definir anchos de columnas (total 195mm)
+        $anchoItem = 10;
+        $anchoProducto = 115;
+        $anchoCantidad = 25;
+        $anchoPrecio = 45;
         
         $pdf->SetFillColor(52, 73, 94);
         $pdf->SetTextColor(255, 255, 255);
         $pdf->SetFont('arial','B',8);
         $pdf->Cell($anchoItem, 6, $this->decodeUtf8('ITEM'), 1, 0, 'C', true);
         $pdf->Cell($anchoProducto, 6, $this->decodeUtf8('PRODUCTO'), 1, 0, 'C', true);
-        $pdf->Cell($anchoCantidad, 6, $this->decodeUtf8('CANTIDAD'), 1, 1, 'C', true);
+        $pdf->Cell($anchoCantidad, 6, $this->decodeUtf8('CANT.'), 1, 0, 'C', true);
+        $pdf->Cell($anchoPrecio, 6, $this->decodeUtf8('PRECIO'), 1, 1, 'C', true);
         
         $pdf->SetFont('Helvetica','',8);
         $pdf->SetTextColor(0, 0, 0);
         
         // Verificar si hay productos
+        $totalProductos = 0;
         if(count($order->articles) > 0) {
             foreach ($order->articles as $k => $value) {
                 $fill = ($k % 2 == 0);
@@ -279,22 +307,27 @@ class RepairOrderPrintAction{
                 
                 // Calcular altura necesaria para el texto
                 $descripcion = $this->decodeUtf8($value->description);
+                $cantidad = $value->pivot->quantity ?? 0;
+                $precio = $value->pivot->price ?? 0;
+                $totalProductos += ($precio * $cantidad);
+                
                 $pdf->SetFont('Helvetica','',8);
                 
                 // Obtener número de líneas necesarias
                 $nb = 0;
-                $textWidth = $anchoProducto - 2; // Restar márgenes internos
+                $textWidth = $anchoProducto - 2;
                 $length = strlen($descripcion);
                 if($length > 0) {
                     $nb = ceil($pdf->GetStringWidth($descripcion) / $textWidth);
                 }
-                $altura = max(6, $nb * 5); // Mínimo 6mm de altura
+                $altura = max(6, $nb * 5);
                 
-                // Dibujar celdas manualmente
-                $x = $pdf->GetX();
+                // Dibujar celdas manualmente con alineación en X=7
+                $x = 7;
                 $y = $pdf->GetY();
                 
                 // ITEM
+                $pdf->SetXY($x, $y);
                 $pdf->Cell($anchoItem, $altura, str_pad(($k+1), 2, '0', STR_PAD_LEFT), 1, 0, 'C', $fill);
                 
                 // PRODUCTO (con MultiCell simulado)
@@ -304,16 +337,41 @@ class RepairOrderPrintAction{
                 
                 // CANTIDAD
                 $pdf->SetXY($x + $anchoItem + $anchoProducto, $y);
-                $pdf->Cell($anchoCantidad, $altura, $this->decodeUtf8($value->pivot->quantity), 1, 1, 'C', $fill);
+                $pdf->Cell($anchoCantidad, $altura, $cantidad, 1, 0, 'C', $fill);
+                
+                // PRECIO
+                $pdf->SetXY($x + $anchoItem + $anchoProducto + $anchoCantidad, $y);
+                $pdf->Cell($anchoPrecio, $altura, 'S/ ' . number_format($precio, 2), 1, 1, 'C', $fill);
+                
+                // Posicionar para siguiente fila
+                $pdf->SetXY($x, $y + $altura);
             }
+            
+            // FILA DE TOTAL PRODUCTOS
+            $pdf->SetX(7);
+            $pdf->SetFont('Arial', 'B', 9);
+            $pdf->SetFillColor(236, 240, 241);
+            $pdf->Cell($anchoItem + $anchoProducto + $anchoCantidad, 6, $this->decodeUtf8('SUBTOTAL REPUESTOS'), 1, 0, 'R', true);
+            $pdf->Cell($anchoPrecio, 6, 'S/ ' . number_format($totalProductos, 2), 1, 1, 'C', true);
         } else {
             // Mostrar mensaje si no hay productos
             $pdf->SetFillColor(255, 255, 255);
             $pdf->Cell(195, 6, $this->decodeUtf8('No se utilizaron repuestos'), 1, 1, 'C');
         }
         
+        // ============ TOTAL GENERAL DE PROFORMA ============
+        $pdf->Ln(3);
+        $totalGeneral = $totalServicios + $totalProductos;
+        $pdf->SetX(7);
+        
+        $pdf->SetFont('Arial', 'B', 11);
+        $pdf->SetFillColor(52, 73, 94);
+        $pdf->SetTextColor(255, 255, 255);
+        $pdf->Cell(195, 8, $this->decodeUtf8('TOTAL PROFORMA: S/ ' . number_format($totalGeneral, 2)), 0, 1, 'R', true);
+        
         // ============ OBSERVACIONES Y REQUERIMIENTOS ============
         $pdf->Ln(5);
+        $pdf->SetX(7);
         
         $pdf->SetFont('Arial','B',8);
         $pdf->SetTextColor(52, 73, 94);
@@ -323,6 +381,7 @@ class RepairOrderPrintAction{
         $pdf->MultiCell(155, 5, $this->decodeUtf8($order->problem), 0, 'L');
         
         $pdf->Ln(1);
+        $pdf->SetX(7);
         $pdf->SetFont('Arial','B',8);
         $pdf->SetTextColor(52, 73, 94);
         $pdf->Cell(25, 5, $this->decodeUtf8('Observaciones:'), 0, 0, 'L');

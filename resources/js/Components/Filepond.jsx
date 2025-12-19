@@ -32,7 +32,6 @@ export default function Filepond({ vehicle, images, handleSet, handleRemove }) {
                     }
                 };
             });
-            console.log('Archivos formateados:', formattedFiles);
             setFiles(formattedFiles);
         } else {
             setFiles([]);
@@ -174,11 +173,10 @@ export default function Filepond({ vehicle, images, handleSet, handleRemove }) {
             <FilePond
                 files={files}
                 onupdatefiles={(fileItems) => {
-                    console.log('Files actualizados:', fileItems);
                     setFiles(fileItems.map(item => item.file ? item.file : item));
                 }}
                 allowMultiple={true}
-                maxFiles={10}
+                maxFiles={3}
                 maxFileSize="5MB"
                 acceptedFileTypes={['image/*']}
                 labelMaxFileSizeExceeded="La imagen es muy grande"
