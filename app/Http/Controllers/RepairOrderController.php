@@ -8,6 +8,7 @@ use App\Models\RepairOrderInspection;
 use App\Models\Vehicle;
 use App\Models\VehiclePart;
 use App\Services\DataTable;
+use Cloudinary\Api\Upload\UploadApi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -64,29 +65,22 @@ class RepairOrderController extends Controller{
         return response()->json($result);
     }
 
-
     public function upload(Request $request) {
         $request->validate([
             'vehicle' => 'required',
             'images' => 'required|image|max:10240',
         ]);
-
         $vehicle = Vehicle::findOrFail($request->vehicle);
         $file = $request->file('images');
-
         // Definimos la ruta completa. Cloudinary creará las carpetas automáticamente.
         $fullPath = 'annexes/' . $vehicle->plate;
-
         try {
             // IMPORTANTE: store() acepta la CARPETA como primer parámetro
             // El driver de Cloudinary usará esto para crear el 'folder' en la nube
             $path = $file->store($fullPath, 'cloudinary');
-
             // Para obtener la URL que guardarás en la BD
             $url = Storage::disk('cloudinary')->url($path);
-
-            return $url; 
-
+            return $url;
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
