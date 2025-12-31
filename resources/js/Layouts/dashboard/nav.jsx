@@ -81,14 +81,14 @@ export function NavMobile({
                 },
             }}
         >
-            <NavContent data={data} slots={slots} workspaces={workspaces} />
+            <NavContent data={data} slots={slots} workspaces={workspaces} onClose={onClose} />
         </Drawer>
     );
 }
 
 // ----------------------------------------------------------------------
 
-export function NavContent({ data, slots, workspaces, sx }) {
+export function NavContent({ data, slots, workspaces, onClose, sx }) {
     // const pathname = usePathname();
     return (
         <>
@@ -108,6 +108,7 @@ export function NavContent({ data, slots, workspaces, sx }) {
                                         disableGutters
                                         component={Link} // Usar el componente Link de Inertia
                                         href={route(item.path)} // La ruta que apunta al backend con Inertia
+                                        onClick={() => onClose && onClose()}
                                         sx={{
                                             pl: 2,
                                             py: 1,
