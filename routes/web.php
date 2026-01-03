@@ -64,6 +64,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/search', [VehiclePartController::class,'autocomplete'])->name('search');
     });
     Route::resource('vehicle_parts', VehiclePartController::class)->only(['index','show','destroy','store']);
+
+    Route::get('/php-info', function () {
+        return phpinfo();
+    });
 });
 
 require __DIR__.'/auth.php';
