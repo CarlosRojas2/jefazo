@@ -7,8 +7,8 @@ use App\Models\RepairOrder;
 use App\Models\RepairOrderInspection;
 use App\Models\Vehicle;
 use App\Models\VehiclePart;
+use App\Services\CloudinaryService;
 use App\Services\DataTable;
-use Cloudinary\Api\Upload\UploadApi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -70,19 +70,49 @@ class RepairOrderController extends Controller{
             'vehicle' => 'required',
             'images' => 'required|image|max:10240',
         ]);
+
         $vehicle = Vehicle::findOrFail($request->vehicle);
         $file = $request->file('images');
-        // Definimos la ruta completa. Cloudinary creará las carpetas automáticamente.
-        $fullPath = 'annexes/' . $vehicle->plate;
+
         try {
-            // IMPORTANTE: store() acepta la CARPETA como primer parámetro
-            // El driver de Cloudinary usará esto para crear el 'folder' en la nube
-            $path = $file->store($fullPath, 'cloudinary');
-            // Para obtener la URL que guardarás en la BD
-            $url = Storage::disk('cloudinary')->url($path);
-            return $url;
+            \Illuminate\Support\Facades\Log::info('Upload iniciado', [
+                'vehicle_id' => $request->vehicle,
+                'file_name' => $file->getClientOriginalName(),
+                'file_size' => $file->getSize(),
+                'file_mime' => $file->getMimeType(),
+            ]);
+
+            // Crear estructura de carpetas: annexes/{plate}/{fecha_actual}
+            $currentDate = now()->format('Y-m-d');
+            $folder = "annexes/{$vehicle->plate}/{$currentDate}";
+
+            \Illuminate\Support\Facades\Log::info('Estructura de carpeta', [
+                'folder' => $folder,
+            ]);
+
+            $result = CloudinaryService::uploadImage($file, $folder);
+
+            if (!$result) {
+                \Illuminate\Support\Facades\Log::error('CloudinaryService retornó null');
+                return response()->json(['error' => 'Error al subir la imagen'], 400);
+            }
+
+            \Illuminate\Support\Facades\Log::info('Imagen subida exitosamente', [
+                'url' => $result['url'],
+                'public_id' => $result['public_id'],
+            ]);
+
+            // Retornar SOLO la URL string (FilePond la espera así)
+            return response()->json($result['url']);
+
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            \Illuminate\Support\Facades\Log::error('Error en upload', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json(['error' => 'Error: ' . $e->getMessage()], 500);
         }
     }
 
@@ -90,30 +120,22 @@ class RepairOrderController extends Controller{
         try {
             // FilePond envía el path como texto plano en el body
             $path = $request->getContent();
-            
             // Limpiar el path de posibles comillas, espacios y caracteres extraños
             $path = trim($path);
             $path = trim($path, '"\'');
-            
             // Verificar que el path no esté vacío
             if (empty($path)) {
                 return response()->json(['error' => 'Path no proporcionado'], 400);
             }
-            
-            // Eliminar el archivo del disco si existe
-            if (Storage::disk('cloudinary')->exists($path)) {
-                Storage::disk('cloudinary')->delete($path);
-            } else {
-            }
+            // Eliminar el archivo de Cloudinary usando CloudinaryService
+            CloudinaryService::deleteImageByUrl($path);
             
             // Eliminar el registro de la base de datos si existe
             $image = Image::where('path', $path)->first();
             if ($image) {
                 $image->delete();
             }
-            
             return response('', 200); // FilePond espera respuesta vacía con código 200
-            
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error al eliminar la imagen'], 500);
         }
@@ -123,8 +145,9 @@ class RepairOrderController extends Controller{
         $request->validate([
             'filename' => 'required|string',
         ]);
-        $path = 'annexes/' . $request->filename;
-        Storage::disk('cloudinary')->delete($path);
+        
+        CloudinaryService::deleteImageByUrl($request->filename);
+        
         return response()->json(['status' => 'ok']);
     }
 
@@ -136,7 +159,7 @@ class RepairOrderController extends Controller{
     }
 
     public function diagnose(Request $request,RepairOrderStoreAction $store){
-        $validated = $request->validate([
+        $request->validate([
             'id' => 'required|exists:repair_orders,id',
             'status' => 'required|in:REVISADO',
             'services' => 'required|array',

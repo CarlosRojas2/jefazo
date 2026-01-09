@@ -4,6 +4,7 @@ namespace App\Actions\Pdfs;
 use App\Models\RepairOrder;
 use App\Traits\FunctionsTrait;
 use App\Services\CustomPdf as Pdf;
+use App\Services\CloudinaryService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 
@@ -205,6 +206,7 @@ class RepairOrderPrintAction{
         $pdf->SetTextColor(0, 0, 0);
         
         $totalServicios = 0;
+        $pdf->SetX(7);
         
         if(count($order->services) > 0) {
             foreach ($order->services as $k => $value) {
@@ -297,6 +299,7 @@ class RepairOrderPrintAction{
         
         $pdf->SetFont('Helvetica','',8);
         $pdf->SetTextColor(0, 0, 0);
+        $pdf->SetX(7);
         
         // Verificar si hay productos
         $totalProductos = 0;
@@ -471,17 +474,23 @@ class RepairOrderPrintAction{
             $xPos = $marginX;
             $yPos = $marginY;
             $imageCount = 0;
+            $annexIndex = 0; // Contador para anexos que sí se muestran
             
             foreach ($order->images as $index => $image) {
                 // OPTIMIZACIÓN CLOUDINARY: 
-                // Pedimos una imagen de max 600px, calidad automática y formato JPG
-                // Esto hace que la descarga sea instantánea.
+                // Validamos que la imagen exista en Cloudinary
                 $urlCloudinary = $image->path;
                 
-                // Si usas el SDK de Cloudinary, puedes construir la URL así:
-                // $optimizedUrl = cloudinary()->getImage($image->path)->addFilter('w_600,c_limit,q_auto,f_jpg')->toUrl();
-                // O manipulando el string si guardas la URL completa:
-                $optimizedUrl = str_replace('/upload/', '/upload/w_600,c_limit,q_auto,f_jpg/', $urlCloudinary);
+                // Validar si la imagen existe en Cloudinary
+                $validImageUrl = CloudinaryService::getValidImageUrl($urlCloudinary, 600);
+                
+                // Si la imagen no existe, saltamos o mostramos placeholder
+                if (!$validImageUrl) {
+                    continue; // Omitir imágenes no disponibles
+                }
+                
+                // Incrementar índice solo si la imagen es válida
+                $annexIndex++;
 
                 if ($yPos + $imageHeight + 15 > 270) {
                     $pdf->AddPage();
@@ -494,12 +503,9 @@ class RepairOrderPrintAction{
                 $pdf->SetDrawColor(200, 200, 200);
                 $pdf->RoundedRect($xPos, $yPos, $imageWidth, $imageHeight + 10, 2, 'DF');
                 
-                // ELIMINAMOS getimagesize(). 
-                // Como las celdas son fijas, forzamos la imagen al contenedor. 
-                // Esto ahorra un 50% del tiempo de carga.
                 try {
                     // El 5to parámetro 'JPG' es vital para URLs de Cloudinary
-                    $pdf->Image($optimizedUrl, $xPos + 2, $yPos + 2, $imageWidth - 4, $imageHeight - 4, 'JPG');
+                    $pdf->Image($validImageUrl, $xPos + 2, $yPos + 2, $imageWidth - 4, $imageHeight - 4, 'JPG');
                 } catch (\Exception $e) {
                     $pdf->SetXY($xPos, $yPos + ($imageHeight/2));
                     $pdf->SetFont('Arial', 'I', 7);
@@ -510,7 +516,7 @@ class RepairOrderPrintAction{
                 $pdf->SetTextColor(255, 255, 255);
                 $pdf->SetFillColor(52, 73, 94);
                 $pdf->SetXY($xPos + 2, $yPos + 2);
-                $pdf->Cell(28, 4, $this->decodeUtf8('Anexo ' . ($index + 1)), 0, 0, 'C', true);
+                $pdf->Cell(28, 4, $this->decodeUtf8('Anexo ' . $annexIndex), 0, 0, 'C', true);
                 
                 $pdf->SetFont('Arial', '', 7);
                 $pdf->SetTextColor(100, 100, 100);
@@ -552,12 +558,20 @@ class RepairOrderPrintAction{
         $pdf->Line(40, $yFirma, 90, $yFirma);
         $pdf->Line(140, $yFirma, 190, $yFirma);
         
-        // Imágenes de firmas
+        // Imágenes de firmas (validar antes de usar)
         if($firmaCliente) {
-            $pdf->Image($firmaCliente, 45, $yInicio, 40, 18);
+            // Validar que la firma exista en Cloudinary
+            $validFirmaUrl = CloudinaryService::getValidImageUrl($firmaCliente, 300);
+            if ($validFirmaUrl) {
+                try {
+                    $pdf->Image($validFirmaUrl, 45, $yInicio, 40, 18, 'JPG');
+                } catch (\Exception $e) {
+                    // Firma no disponible, solo mostrar línea
+                }
+            }
         }
         if($firmaTecnico) {
-            $pdf->Image($firmaTecnico, 145, $yInicio, 40, 18);
+            // Comentado: $pdf->Image($firmaTecnico, 145, $yInicio, 40, 18);
         }
         
         $pdf->SetY($yFirma + 2);
@@ -565,13 +579,13 @@ class RepairOrderPrintAction{
         // Etiquetas de firmas
         $pdf->SetFont('Arial', 'B', 9);
         $pdf->SetTextColor(52, 73, 94);
-        $pdf->Cell(95, 5, $this->decodeUtf8('FIRMA DEL CLIENTE'), 0, 0, 'C');
-        $pdf->Cell(95, 5, $this->decodeUtf8('FIRMA DEL TÉCNICO'), 0, 1, 'C');
+        $pdf->Cell(100, 5, $this->decodeUtf8('FIRMA DEL CLIENTE'), 0, 0, 'C');
+        $pdf->Cell(115, 5, $this->decodeUtf8('FIRMA DEL TÉCNICO'), 0, 1, 'C');
         
         $pdf->SetFont('Arial', '', 7);
         $pdf->SetTextColor(100, 100, 100);
-        $pdf->Cell(95, 4, $this->decodeUtf8($order->customer->full_names), 0, 0, 'C');
-        $pdf->Cell(95, 4, $this->decodeUtf8('Técnico Responsable'), 0, 1, 'C');
+        $pdf->Cell(100, 4, $this->decodeUtf8($order->customer->full_names), 0, 0, 'C');
+        $pdf->Cell(115, 4, $this->decodeUtf8('Técnico Responsable'), 0, 1, 'C');
         
         // ============ NOTA IMPORTANTE (AL FINAL DEL DOCUMENTO) ============
         // Verificar espacio disponible para la nota

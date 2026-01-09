@@ -7,6 +7,7 @@ import Button from '@mui/material/Button';
 import { Iconify } from '@/Template/Components/iconify';
 import LoadingButton from '@mui/lab/LoadingButton';
 import DataGrid from '@/Components/DataGrid';
+import PrintOrderModal from '@/Components/PrintOrderModal';
 import axios from 'axios';
 const RepairOrder = ()=>{
     const columns = [
@@ -57,6 +58,7 @@ const RepairOrder = ()=>{
     const [refresh, setRefresh] = useState(false);
     const [showInspection,setShowInspection]=useState(false);
     const [selectedRecord, setSelectedRecord] = useState(null);
+    const [openPrintModal, setOpenPrintModal] = useState(false);
     const handleEdit=()=>{
         if(selectedRecord.length<=0){
             toast.warning('Por favor seleccione un registro para editar!');
@@ -114,12 +116,27 @@ const RepairOrder = ()=>{
     const refreshGrid=()=>{
         setRefresh(true);
     }
+
     const handlePrintOrder = () => {
         if(selectedRecord.length<=0){
             toast.warning('Por favor seleccione un registro para imprimir!');
             return;
         }
-        window.open(route('repair_orders.print',selectedRecord), '_blank');
+        setOpenPrintModal(true);
+    };
+
+    const handleViewPDF = (orderId) => {
+        window.open(route('repair_orders.print', orderId), '_blank');
+    };
+
+    const handlePrintPDF = (orderId) => {
+        // Usar el iframe del modal para imprimir
+        setTimeout(() => {
+            const iframe = document.querySelector('iframe[title="PDF Preview"]');
+            if (iframe) {
+                iframe.contentWindow.print();
+            }
+        }, 100);
     };
 
     return (
@@ -193,6 +210,14 @@ const RepairOrder = ()=>{
                 title="Administrar Ordenes de reparación"
                 path='repair_orders.list'
                 dblClick={handleEdit}
+            />
+
+            <PrintOrderModal 
+                open={openPrintModal}
+                onClose={() => setOpenPrintModal(false)}
+                orderId={selectedRecord}
+                onView={handleViewPDF}
+                onPrint={handlePrintPDF}
             />
         </DashboardContent>
     );

@@ -47,7 +47,7 @@ const Dashboard = ()=>{
                         >
                             <Iconify width={20} icon='eva:trending-down-fill' />
                             <Box component="span" sx={{ typography: 'subtitle2' }}>
-                                algo
+                                ...
                             </Box>
                         </Box>
 

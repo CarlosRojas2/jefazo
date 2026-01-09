@@ -40,11 +40,28 @@ class RepairOrderStoreAction{
     }
 
     public function saveImages(RepairOrder $repair_order, array $images){
-        // Restaurar o crear solo las imágenes que vienen en el array de imágenes
+        // Manejar diferentes formatos de entrada
+        $imagePaths = [];
+        
         foreach ($images as $image) {
+            // Si es un array con 'url' o 'path'
+            if (is_array($image)) {
+                $path = $image['url'] ?? $image['path'] ?? null;
+                if ($path) {
+                    $imagePaths[] = $path;
+                }
+            } 
+            // Si es un string directo
+            else if (is_string($image)) {
+                $imagePaths[] = $image;
+            }
+        }
+
+        // Restaurar o crear solo las imágenes que vienen en el array de imágenes
+        foreach ($imagePaths as $imagePath) {
             $obj_image = Image::withTrashed()
             ->where('repair_order_id', $repair_order->id)
-            ->where('path', $image)
+            ->where('path', $imagePath)
             ->first();
             if ($obj_image) {
                 // Si la imagen existe en "papelera", restaurarla
@@ -52,14 +69,14 @@ class RepairOrderStoreAction{
             } else {
                 // Si no existe, crear una nueva imagen
                 $repair_order->images()->create([
-                    'path' => $image
+                    'path' => $imagePath
                 ]);
             }
         }
 
-        // Eliminar solo las imágenes que NO están en el array de imágenes (sin tocar las que vienen en $images)
+        // Eliminar solo las imágenes que NO están en el array de imágenes (sin tocar las que vienen en $imagePaths)
         $repair_order->images()
-        ->whereNotIn('path', $images)
+        ->whereNotIn('path', $imagePaths)
         ->delete();
     }
 
