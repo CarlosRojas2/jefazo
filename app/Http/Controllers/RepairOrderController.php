@@ -76,35 +76,15 @@ class RepairOrderController extends Controller{
 
         try {
             $originalSize = $file->getSize();
-            
-            \Illuminate\Support\Facades\Log::info('Upload iniciado', [
-                'vehicle_id' => $request->vehicle,
-                'vehicle_plate' => $vehicle->plate,
-                'file_name' => $file->getClientOriginalName(),
-                'file_size' => $originalSize,
-                'file_mime' => $file->getMimeType(),
-            ]);
 
             // Si la imagen es muy grande (> 5MB), comprimirla
             if ($originalSize > 5 * 1024 * 1024) {
-                \Illuminate\Support\Facades\Log::info('Imagen grande detectada, comprimiendo', [
-                    'original_size' => $originalSize
-                ]);
-                
                 $file = $this->compressImage($file);
-                
-                \Illuminate\Support\Facades\Log::info('Imagen comprimida', [
-                    'new_size' => $file->getSize()
-                ]);
             }
 
             // Crear estructura de carpetas: annexes/{plate}/{fecha_actual}
             $currentDate = now()->format('Y-m-d');
             $folder = "annexes/{$vehicle->plate}/{$currentDate}";
-
-            \Illuminate\Support\Facades\Log::info('Carpeta destino', [
-                'folder' => $folder,
-            ]);
 
             // Subir a Cloudinary
             $result = CloudinaryService::uploadImage($file, $folder, [
@@ -112,40 +92,17 @@ class RepairOrderController extends Controller{
                 'resource_type' => 'auto',
             ]);
 
-            if (!$result) {
-                \Illuminate\Support\Facades\Log::error('CloudinaryService retornó null');
-                return response()->json(['error' => 'CloudinaryService retornó null'], 400);
+            if (!$result || !isset($result['url'])) {
+                return response()->json(['error' => 'Error al subir la imagen a Cloudinary'], 400);
             }
-
-            if (!isset($result['url'])) {
-                \Illuminate\Support\Facades\Log::error('CloudinaryService: URL no en resultado', [
-                    'result' => $result
-                ]);
-                return response()->json(['error' => 'URL no disponible en respuesta'], 400);
-            }
-
-            \Illuminate\Support\Facades\Log::info('Imagen subida exitosamente', [
-                'url' => $result['url'],
-                'public_id' => $result['public_id'],
-                'final_size' => $file->getSize(),
-            ]);
 
             // Retornar SOLO la URL string (FilePond la espera así)
             return response()->json($result['url']);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
-            \Illuminate\Support\Facades\Log::error('Error de validación en upload', [
-                'errors' => $e->errors(),
-            ]);
-            return response()->json(['error' => 'Error de validación: ' . json_encode($e->errors())], 422);
+            return response()->json(['error' => 'Error de validación: archivo debe ser una imagen menor a 10MB'], 422);
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Error en upload', [
-                'error' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-            return response()->json(['error' => 'Error: ' . $e->getMessage()], 500);
+            return response()->json(['error' => 'Error: ' . substr($e->getMessage(), 0, 100)], 500);
         }
     }
 
@@ -158,15 +115,8 @@ class RepairOrderController extends Controller{
             $tempPath = $uploadedFile->store('temp', 'local');
             $fullPath = storage_path('app/' . $tempPath);
             
-            \Illuminate\Support\Facades\Log::info('Compresión: intentando comprimir', [
-                'path' => $fullPath,
-                'exists' => file_exists($fullPath),
-                'size' => filesize($fullPath)
-            ]);
-            
             // Verificar si GD está disponible
             if (!extension_loaded('gd')) {
-                \Illuminate\Support\Facades\Log::warning('GD no disponible, retornando imagen original');
                 return $uploadedFile;
             }
             
@@ -175,28 +125,17 @@ class RepairOrderController extends Controller{
             $image = @imagecreatefromstring($imageContent);
             
             if ($image === false) {
-                \Illuminate\Support\Facades\Log::warning('No se pudo crear imagen, retornando original');
                 return $uploadedFile;
             }
             
             $width = imagesx($image);
             $height = imagesy($image);
             
-            \Illuminate\Support\Facades\Log::info('Imagen original', [
-                'width' => $width,
-                'height' => $height
-            ]);
-            
             // Redimensionar si es muy grande
             $maxWidth = 2000;
             if ($width > $maxWidth) {
                 $ratio = $maxWidth / $width;
                 $newHeight = intval($height * $ratio);
-                
-                \Illuminate\Support\Facades\Log::info('Redimensionando', [
-                    'new_width' => $maxWidth,
-                    'new_height' => $newHeight
-                ]);
                 
                 $resized = imagecreatetruecolor($maxWidth, $newHeight);
                 imagecopyresampled($resized, $image, 0, 0, 0, 0, $maxWidth, $newHeight, $width, $height);
@@ -206,18 +145,8 @@ class RepairOrderController extends Controller{
             }
             
             // Guardar con calidad reducida (75%)
-            $saved = imagejpeg($image, $fullPath, 75);
+            imagejpeg($image, $fullPath, 75);
             imagedestroy($image);
-            
-            if (!$saved) {
-                \Illuminate\Support\Facades\Log::error('No se pudo guardar imagen comprimida');
-                return $uploadedFile;
-            }
-            
-            $newSize = filesize($fullPath);
-            \Illuminate\Support\Facades\Log::info('Imagen comprimida exitosamente', [
-                'new_size' => $newSize
-            ]);
             
             // Crear un UploadedFile con el archivo comprimido
             return new \Illuminate\Http\UploadedFile(
@@ -228,11 +157,6 @@ class RepairOrderController extends Controller{
                 true
             );
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Error comprimiendo imagen', [
-                'error' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine()
-            ]);
             // Si falla la compresión, retornar el original
             return $uploadedFile;
         }
