@@ -75,12 +75,27 @@ class RepairOrderController extends Controller{
         $file = $request->file('images');
 
         try {
+            $originalSize = $file->getSize();
+            
             \Illuminate\Support\Facades\Log::info('Upload iniciado', [
                 'vehicle_id' => $request->vehicle,
                 'file_name' => $file->getClientOriginalName(),
-                'file_size' => $file->getSize(),
+                'file_size' => $originalSize,
                 'file_mime' => $file->getMimeType(),
             ]);
+
+            // Si la imagen es muy grande (> 5MB), comprimirla
+            if ($originalSize > 5 * 1024 * 1024) {
+                \Illuminate\Support\Facades\Log::info('Comprimiendo imagen grande', [
+                    'original_size' => $originalSize
+                ]);
+                
+                $file = $this->compressImage($file);
+                
+                \Illuminate\Support\Facades\Log::info('Imagen comprimida', [
+                    'new_size' => $file->getSize()
+                ]);
+            }
 
             // Crear estructura de carpetas: annexes/{plate}/{fecha_actual}
             $currentDate = now()->format('Y-m-d');
@@ -90,7 +105,10 @@ class RepairOrderController extends Controller{
                 'folder' => $folder,
             ]);
 
-            $result = CloudinaryService::uploadImage($file, $folder);
+            $result = CloudinaryService::uploadImage($file, $folder, [
+                'timeout' => 60,
+                'resource_type' => 'auto',
+            ]);
 
             if (!$result) {
                 \Illuminate\Support\Facades\Log::error('CloudinaryService retornó null');
@@ -113,6 +131,60 @@ class RepairOrderController extends Controller{
                 'trace' => $e->getTraceAsString(),
             ]);
             return response()->json(['error' => 'Error: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Comprime una imagen sin perder mucha calidad
+     * Reduce tamaño a máximo 2MB
+     */
+    private function compressImage($uploadedFile) {
+        $tempPath = $uploadedFile->store('temp', 'local');
+        $fullPath = storage_path('app/' . $tempPath);
+        
+        try {
+            // Crear recurso de imagen
+            $image = @imagecreatefromstring(file_get_contents($fullPath));
+            
+            if ($image === false) {
+                \Illuminate\Support\Facades\Log::warning('No se pudo crear imagen para comprimir');
+                return $uploadedFile;
+            }
+            
+            $width = imagesx($image);
+            $height = imagesy($image);
+            
+            // Redimensionar si es muy grande
+            $maxWidth = 2000;
+            if ($width > $maxWidth) {
+                $ratio = $maxWidth / $width;
+                $newHeight = intval($height * $ratio);
+                
+                $resized = imagecreatetruecolor($maxWidth, $newHeight);
+                imagecopyresampled($resized, $image, 0, 0, 0, 0, $maxWidth, $newHeight, $width, $height);
+                
+                imagedestroy($image);
+                $image = $resized;
+            }
+            
+            // Guardar con calidad reducida (75%)
+            imagejpeg($image, $fullPath, 75);
+            imagedestroy($image);
+            
+            // Crear un UploadedFile con el archivo comprimido
+            return new \Illuminate\Http\UploadedFile(
+                $fullPath,
+                $uploadedFile->getClientOriginalName(),
+                'image/jpeg',
+                null,
+                true
+            );
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Error comprimiendo imagen', [
+                'error' => $e->getMessage()
+            ]);
+            // Si falla la compresión, retornar el original
+            return $uploadedFile;
         }
     }
 
