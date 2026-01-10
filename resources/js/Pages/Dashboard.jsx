@@ -81,7 +81,7 @@ const Dashboard = ()=>{
                         }}
                     >
                         <Box sx={{ width: 48, height: 48, mb: 3 }}>
-                            <Iconify icon="hugeicons:document-validation-01" width={48} height={48} />
+                            <img alt="icon" src="/assets/icons/glass/ic-document.svg" />
                         </Box>
 
                         <Box
@@ -130,7 +130,7 @@ const Dashboard = ()=>{
                         }}
                     >
                         <Box sx={{ width: 48, height: 48, mb: 3 }}>
-                            <Iconify icon="hugeicons:check-circle-02" width={48} height={48} />
+                            <img alt="icon" src="/assets/icons/glass/ic-document.svg" />
                         </Box>
 
                         <Box
@@ -179,7 +179,7 @@ const Dashboard = ()=>{
                         }}
                     >
                         <Box sx={{ width: 48, height: 48, mb: 3 }}>
-                            <Iconify icon="hugeicons:document-details-02" width={48} height={48} />
+                            <img alt="icon" src="/assets/icons/glass/ic-document.svg" />
                         </Box>
 
                         <Box
