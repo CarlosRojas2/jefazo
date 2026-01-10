@@ -81,5 +81,4 @@ class VehicleController extends Controller{
             'message' => 'Vehículo eliminado correctamente.'
         ]);
     }
-
 }
