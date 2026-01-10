@@ -6,7 +6,6 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
-use Cloudinary\Api\Upload\UploadApi;
 
 class CloudinaryService {
     
@@ -113,23 +112,19 @@ class CloudinaryService {
             $filePath = is_string($file) ? $file : $file->getRealPath();
             
             if (!file_exists($filePath)) {
-                return null;
+                throw new \Exception("Archivo no encontrado: $filePath");
             }
 
             // Preparar opciones base para Cloudinary
-            $cloudinaryOptions = [
-                'folder' => trim($folder, '/'),  // Asegurar que el folder no tenga slashes al inicio/final
+            $uploadOptions = array_merge([
+                'folder' => trim($folder, '/'),
                 'resource_type' => 'auto',
                 'overwrite' => false,
                 'unique_filename' => true,
-            ];
-            
-            // Fusionar con opciones adicionales (permitiendo que sobrescriban)
-            $finalOptions = array_merge($cloudinaryOptions, $options);
+            ], $options);
 
-            // Usar UploadApi en lugar de Cloudinary::upload()
-            $uploadApi = new UploadApi();
-            $uploadedFile = $uploadApi->upload($filePath, $finalOptions);
+            // Usar uploadApi() de la Facade de Cloudinary
+            $uploadedFile = Cloudinary::uploadApi()->upload($filePath, $uploadOptions);
 
             return [
                 'url' => $uploadedFile['secure_url'],
@@ -137,7 +132,7 @@ class CloudinaryService {
                 'secure_url' => $uploadedFile['secure_url'],
             ];
         } catch (\Throwable $e) {
-            return null;
+            throw new \Exception('Cloudinary: ' . $e->getMessage());
         }
     }
 
@@ -149,9 +144,8 @@ class CloudinaryService {
      */
     public static function deleteImage($publicId) {
         try {
-            // Usar UploadApi para eliminar
-            $uploadApi = new UploadApi();
-            $uploadApi->destroy($publicId);
+            // Usar uploadApi() para eliminar
+            Cloudinary::uploadApi()->destroy($publicId);
 
             // Limpiar caché de validación
             $cacheKey = 'cloudinary_image_exists_' . md5($publicId);

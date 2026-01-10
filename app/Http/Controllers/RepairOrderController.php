@@ -102,7 +102,7 @@ class RepairOrderController extends Controller{
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json(['error' => 'Error de validación: archivo debe ser una imagen menor a 10MB'], 422);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Error: ' . substr($e->getMessage(), 0, 100)], 500);
+            return response()->json(['error' => 'Error: ' . $e->getMessage()], 500);
         }
     }
 
