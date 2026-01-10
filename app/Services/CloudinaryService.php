@@ -4,7 +4,6 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Cloudinary\Api\Upload\UploadApi;
@@ -71,29 +70,17 @@ class CloudinaryService {
      */
     public static function getValidImageUrl($imageUrl, $width = 600) {
         if (empty($imageUrl)) {
-            Log::debug('CloudinaryService: URL vacía');
             return null;
         }
 
         try {
             if (!self::imageExists($imageUrl)) {
-                Log::warning('CloudinaryService: Imagen no existe o no accesible', [
-                    'url' => $imageUrl
-                ]);
                 return null;
             }
 
             $optimizedUrl = self::optimizeUrl($imageUrl, $width);
-            Log::debug('CloudinaryService: Imagen validada y optimizada', [
-                'original' => $imageUrl,
-                'optimized' => $optimizedUrl
-            ]);
             return $optimizedUrl;
         } catch (\Throwable $e) {
-            Log::error('CloudinaryService: Error al validar imagen', [
-                'url' => $imageUrl,
-                'error' => $e->getMessage()
-            ]);
             return null;
         }
     }
@@ -126,9 +113,6 @@ class CloudinaryService {
             $filePath = is_string($file) ? $file : $file->getRealPath();
             
             if (!file_exists($filePath)) {
-                Log::error('CloudinaryService: Archivo no encontrado', [
-                    'path' => $filePath
-                ]);
                 return null;
             }
 
@@ -143,21 +127,9 @@ class CloudinaryService {
             // Fusionar con opciones adicionales (permitiendo que sobrescriban)
             $finalOptions = array_merge($cloudinaryOptions, $options);
 
-            Log::debug('CloudinaryService: Subiendo imagen con opciones', [
-                'folder' => $finalOptions['folder'],
-                'options' => $finalOptions,
-                'file_size' => filesize($filePath)
-            ]);
-
             // Usar UploadApi en lugar de Cloudinary::upload()
             $uploadApi = new UploadApi();
             $uploadedFile = $uploadApi->upload($filePath, $finalOptions);
-
-            Log::info('CloudinaryService: Imagen subida exitosamente', [
-                'url' => $uploadedFile['secure_url'],
-                'public_id' => $uploadedFile['public_id'],
-                'folder' => $folder
-            ]);
 
             return [
                 'url' => $uploadedFile['secure_url'],
@@ -165,12 +137,6 @@ class CloudinaryService {
                 'secure_url' => $uploadedFile['secure_url'],
             ];
         } catch (\Throwable $e) {
-            Log::error('CloudinaryService: Error al subir imagen', [
-                'folder' => $folder,
-                'error' => $e->getMessage(),
-                'file' => is_string($file) ? $file : ($file->getClientOriginalName() ?? 'unknown'),
-                'code' => $e->getCode(),
-            ]);
             return null;
         }
     }
@@ -187,20 +153,12 @@ class CloudinaryService {
             $uploadApi = new UploadApi();
             $uploadApi->destroy($publicId);
 
-            Log::info('CloudinaryService: Imagen eliminada exitosamente', [
-                'public_id' => $publicId
-            ]);
-
             // Limpiar caché de validación
             $cacheKey = 'cloudinary_image_exists_' . md5($publicId);
             Cache::forget($cacheKey);
 
             return true;
         } catch (\Throwable $e) {
-            Log::error('CloudinaryService: Error al eliminar imagen', [
-                'public_id' => $publicId,
-                'error' => $e->getMessage()
-            ]);
             return false;
         }
     }
@@ -223,15 +181,8 @@ class CloudinaryService {
                 return self::deleteImage($publicId);
             }
 
-            Log::warning('CloudinaryService: No se pudo extraer public_id de URL', [
-                'url' => $imageUrl
-            ]);
             return false;
         } catch (\Throwable $e) {
-            Log::error('CloudinaryService: Error al eliminar imagen por URL', [
-                'url' => $imageUrl,
-                'error' => $e->getMessage()
-            ]);
             return false;
         }
     }
@@ -246,10 +197,6 @@ class CloudinaryService {
         try {
             $info = Cloudinary::api()->resource($publicId);
 
-            Log::debug('CloudinaryService: Información de imagen obtenida', [
-                'public_id' => $publicId
-            ]);
-
             return [
                 'public_id' => $info['public_id'],
                 'url' => $info['secure_url'] ?? $info['url'],
@@ -260,10 +207,6 @@ class CloudinaryService {
                 'created_at' => $info['created_at'],
             ];
         } catch (\Throwable $e) {
-            Log::error('CloudinaryService: Error al obtener información', [
-                'public_id' => $publicId,
-                'error' => $e->getMessage()
-            ]);
             return null;
         }
     }
@@ -279,18 +222,11 @@ class CloudinaryService {
         // Validaciones locales
         $maxSize = 5 * 1024 * 1024; // 5MB
         if ($uploadedFile->getSize() > $maxSize) {
-            Log::warning('CloudinaryService: Archivo demasiado grande', [
-                'size' => $uploadedFile->getSize(),
-                'max' => $maxSize
-            ]);
             return null;
         }
 
         $allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
         if (!in_array($uploadedFile->getMimeType(), $allowedMimes)) {
-            Log::warning('CloudinaryService: Tipo de archivo no permitido', [
-                'mime' => $uploadedFile->getMimeType()
-            ]);
             return null;
         }
 
@@ -326,12 +262,6 @@ class CloudinaryService {
                 ];
             }
         }
-
-        Log::info('CloudinaryService: Carga múltiple completada', [
-            'total' => count($files),
-            'exitosas' => count($results),
-            'errores' => count($errors)
-        ]);
 
         return [
             'success' => $results,
