@@ -1,20 +1,11 @@
-import { Head,useForm,usePage,router } from '@inertiajs/react';
+import { Head,usePage } from '@inertiajs/react';
 import { DashboardLayout,DashboardContent } from '@/Layouts/dashboard';
-import Typography from '@mui/material/Typography';
 import { Iconify } from '@/Template/Components/iconify';
 import { useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import { SvgColor } from '@/Template/Components/svg-color';
 import Grid from '@mui/material/Unstable_Grid2';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
-import Chip from '@mui/material/Chip';
 import { varAlpha, bgGradient } from '@/Theme/styles';
 const Dashboard = ()=>{
     const theme = useTheme();
@@ -219,49 +210,6 @@ const Dashboard = ()=>{
                             }}
                         />
 
-                    </Card>
-                </Grid>
-
-                {/* Tabla de Resumen */}
-                <Grid xs={12}>
-                    <Card sx={{ p: 3 }}>
-                        <Typography variant="h6" sx={{ mb: 2 }}>Resumen de Órdenes por Estado</Typography>
-                        <TableContainer component={Paper} sx={{ boxShadow: 'none', border: '1px solid #e0e0e0' }}>
-                            <Table>
-                                <TableHead>
-                                    <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
-                                        <TableCell><strong>Estado</strong></TableCell>
-                                        <TableCell align="center"><strong>Cantidad</strong></TableCell>
-                                        <TableCell align="center"><strong>Porcentaje</strong></TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    <TableRow>
-                                        <TableCell>
-                                            <Chip label="INGRESADO" color="warning" variant="outlined" />
-                                        </TableCell>
-                                        <TableCell align="center">{ingresados}</TableCell>
-                                        <TableCell align="center">
-                                            {totalOrdenes > 0 ? ((ingresados / totalOrdenes) * 100).toFixed(1) : 0}%
-                                        </TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell>
-                                            <Chip label="REVISADO" color="success" variant="outlined" />
-                                        </TableCell>
-                                        <TableCell align="center">{revisados}</TableCell>
-                                        <TableCell align="center">
-                                            {totalOrdenes > 0 ? ((revisados / totalOrdenes) * 100).toFixed(1) : 0}%
-                                        </TableCell>
-                                    </TableRow>
-                                    <TableRow sx={{ backgroundColor: '#f9f9f9' }}>
-                                        <TableCell><strong>TOTAL</strong></TableCell>
-                                        <TableCell align="center"><strong>{totalOrdenes}</strong></TableCell>
-                                        <TableCell align="center"><strong>100%</strong></TableCell>
-                                    </TableRow>
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
                     </Card>
                 </Grid>
 
