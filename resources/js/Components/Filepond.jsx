@@ -205,7 +205,6 @@ export default function Filepond({ vehicle, images, handleSet, handleRemove }) {
                 credits={false}
                 allowRevert={true}
                 allowRemove={true}
-                allowImageCapture={true}
                 acceptedFileTypes={['image/jpeg', 'image/png', 'image/jpg']}
             />
         </div>
