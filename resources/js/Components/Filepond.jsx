@@ -177,7 +177,7 @@ export default function Filepond({ vehicle, images, handleSet, handleRemove }) {
                 }}
                 allowMultiple={true}
                 maxFiles={3}
-                maxFileSize="5MB"
+                maxFileSize="10MB"
                 labelMaxFileSizeExceeded="La imagen es muy grande"
                 labelMaxFileSize="El tamaño máximo es {filesize}"
                 labelFileTypeNotAllowed="Tipo de archivo no válido"
@@ -206,9 +206,7 @@ export default function Filepond({ vehicle, images, handleSet, handleRemove }) {
                 allowRevert={true}
                 allowRemove={true}
                 allowImageCapture={true}
-                imageCaptureAttribute="capture"
                 acceptedFileTypes={['image/jpeg', 'image/png', 'image/jpg']}
-                captureMethod="capture"
             />
         </div>
     );
