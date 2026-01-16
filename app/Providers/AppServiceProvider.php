@@ -21,5 +21,10 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Vite::prefetch(concurrency: 3);
+        
+        // Agregar header para permitir acceso a cámara en todos los dispositivos
+        \Illuminate\Support\Facades\Response::macro('withCameraPermissions', function ($response) {
+            return $response->header('Permissions-Policy', 'camera=*');
+        });
     }
 }

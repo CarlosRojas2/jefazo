@@ -3,6 +3,8 @@
     <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="permissions-policy" content="camera=*">
+    <meta name="permissions-policy" content="camera=*">
     <title inertia>{{ config('app.name', 'Laravel') }}</title>
     <!-- PWA -->
     <meta name="theme-color" content="#ffffff">

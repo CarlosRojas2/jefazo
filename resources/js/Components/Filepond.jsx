@@ -207,6 +207,14 @@ export default function Filepond({ vehicle, images, handleSet, handleRemove }) {
                 allowRevert={true}
                 allowRemove={true}
                 allowImageCapture={true}
+                imageCropAspectRatio={null}
+                imageCropMinAspectRatio={null}
+                imageCropMaxAspectRatio={null}
+                mediaSource={{
+                    camera: true,
+                    microphone: false,
+                    screen: false,
+                }}
             />
         </div>
     );
