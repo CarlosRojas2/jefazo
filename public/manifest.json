@@ -6,7 +6,6 @@
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
-  "permissions": ["camera"],
   "icons": [
     {
       "src": "/icons/icon-192.svg",
