@@ -572,6 +572,8 @@ class RepairOrderPrintAction{
         }
         if($firmaTecnico) {
             // Comentado: $pdf->Image($firmaTecnico, 145, $yInicio, 40, 18);
+            $pdf->Image(public_path('/assets/signature.png'), 150, $yInicio, 40, 18, 'PNG');
+
         }
         
         $pdf->SetY($yFirma + 2);
