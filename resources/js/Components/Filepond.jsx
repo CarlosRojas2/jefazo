@@ -206,7 +206,6 @@ export default function Filepond({ vehicle, images, handleSet, handleRemove }) {
                 allowRevert={true}
                 allowRemove={true}
                 accept='image/*'
-                captureMethod='environment'
             />
         </div>
     );
